@@ -1,0 +1,13 @@
+<phpunit
+        bootstrap="bootstrap.php"
+        colors="true">
+	<php>
+		<includePath>.</includePath>
+		<ini name="short_open_tag" value="On"/>
+	</php>
+    <testsuites>
+        <testsuite name="Testsuite for Akop Classes">
+            <directory>./</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>
