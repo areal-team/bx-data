@@ -1,5 +1,6 @@
 {
     "name": "aak74/bitrix",
+    "version": "0.1.0",
     "description": "Convinient classes for 1C-Bitrix framework",
     "license": "MIT",
     "keywords": ["bitrix", "1c-bitrix", "classes", "akop", "highload blocks"],
@@ -27,5 +28,5 @@
             "type": "vcs",
             "url": "https://github.com/aak74/bitrix"
         }
-    ],
+    ]
 }
