@@ -56,6 +56,8 @@ class Model extends \Akop\Element\HlElement
 
 Установка происходит стандартным для [composer](http://getcomposer.org/) способом:
 
+```
 composer require aak74/bitrix:dev-master
+```
 
 [Демосайт](http://demo.gbdev.xyz/)
