@@ -5,6 +5,7 @@ namespace Akop\Element;
 
 use \Bitrix\Highloadblock as HL;
 use \Bitrix\Main\Data\cache;
+use \Akop\Element as Element;
 
 /**
  * @author Андрей Копылов aakopylov@mail.ru
@@ -16,9 +17,9 @@ class HlElement extends BaseElement
 
 	protected
 		$cachePeriod = 0,
-		$prefix = 'Akop',
+		$prefix = "",
         $primaryKey = "id",
-		$entityName = '',
+		$entityName = "",
 		$softDelete = false,
 		$fieldsBase = array(
 			"id" => "ID",
@@ -71,7 +72,6 @@ class HlElement extends BaseElement
 		);
 
 		parent::__construct();
-		// \Gb\Util::pr_var($this, 'this');
 		return $this;
     }
 
@@ -214,7 +214,7 @@ class HlElement extends BaseElement
 			array("ENTITY_ID" => "HLBLOCK_" . $blockId)
 		);
 		while($el = $obj->Fetch()) {
-			$alias = \Gb\Util::camelize( substr($el["FIELD_NAME"], 3) );
+			$alias = \Akop\Util::camelize( substr($el["FIELD_NAME"], 3) );
 			switch ($el["USER_TYPE_ID"]) {
 				case "hlblock":
 					// список возможных значений
@@ -251,7 +251,7 @@ class HlElement extends BaseElement
      */
     protected function isDeletable($id)
     {
-    	$obj = new \Gb\Element\UserField;
+    	$obj = new Element\UserField;
     	$fields = $obj->getList(array(
     		"filter" => array(
     			"USER_TYPE_ID" => "hlblock",
@@ -263,7 +263,7 @@ class HlElement extends BaseElement
 
     	$result = true;
     	foreach ($fields as $key => $field) {
-    		$obj = new \Gb\Element\HlElement(array(
+    		$obj = new Element\HlElement(array(
     			"hlblockId" => substr($field["ENTITY_ID"], 8) // убираем "HLBLOCK_"
     		));
     		$list = $obj->getList(array(

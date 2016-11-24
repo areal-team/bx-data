@@ -15,7 +15,7 @@ class Util
 	}
 
 
-	static function pr_var($var, $title = '')
+	static function pre($var, $title = '')
 	{
 		echo '<h3>'.$title.'</h3>';
 		if ( is_array($var) ) {

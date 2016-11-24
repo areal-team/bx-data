@@ -349,7 +349,6 @@ class BaseElement implements IElement
      */
     protected function getRenamed($item)
     {
-        // \Gb\Util::pr_var([$item, $this->fields], 'getRenamed');
         if ( !empty($this->reversedFields) ) {
             foreach ($item as $key => $value) {
                 $fieldName = ( isset($this->reversedFields[$key]) )
