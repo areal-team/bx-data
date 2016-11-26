@@ -1,6 +1,6 @@
 {
-    "name": "aak74/bitrix",
-    "version": "0.2.0",
+    "name": "aak74/bx-data",
+    "version": "0.2.1",
     "description": "Классы для удобного доступа к данным в 1C-Bitrix",
     "license": "MIT",
     "keywords": ["bitrix", "1c-bitrix", "classes", "akop", "highload blocks", "битрикс", "1С-битрикс"],
@@ -26,7 +26,7 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/aak74/bitrix"
+            "url": "https://github.com/aak74/bx-data"
         }
     ]
 }

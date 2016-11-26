@@ -2,7 +2,7 @@
 
 Вне зависимости от того инфоблок это или highload блок.
 
-* Вам больше не нужно помнить какой ID у инфоблока.  
+* Вам больше не нужно помнить какой ID у инфоблока.
 * Вам больше не
    нужно писать кучу строк для получения элементарных данных из highload
    блока.
@@ -57,7 +57,7 @@ class Model extends \Akop\Element\HlElement
 Установка происходит стандартным для [composer](http://getcomposer.org/) способом:
 
 ```
-composer require aak74/bitrix:dev-master
+composer require aak74/bx-data:dev-master
 ```
 
 [Демосайт](http://demo.gbdev.xyz/)
