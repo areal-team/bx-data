@@ -1,5 +1,6 @@
-<?
+<?php
 namespace Akop\Element;
+
 use \Bitrix\Main\Data\cache;
 
 class BaseElement implements IElement
@@ -22,7 +23,7 @@ class BaseElement implements IElement
         "!@"=>"NIN", //Identical by like
     );
 */
-    static $single_char = array(
+    private static $single_char = [
         "="=>"I", //Identical
         "%"=>"S", //substring
         "?"=>"?", //logical
@@ -30,34 +31,32 @@ class BaseElement implements IElement
         "<"=>"L", //less
         "!"=>"N", // not field LIKE val
         "@"=>"IN" // IN (new SqlExpression)
-    );
+    ];
 
-    protected
-        $cachePeriod = 3600,
-        $fieldsBase = array(),
-        $fields = array(),
-        $reversedFields = array(),
-        $compressedFields = array(),
-        $rename = array(),
-        $primaryKey = "ID",
-        $params = array(),
-        $arCache = array();
+    protected $cachePeriod = 3600;
+    protected $fieldsBase = [];
+    protected $fields = [];
+    protected $reversedFields = [];
+    protected $compressedFields = [];
+    protected $rename = [];
+    protected $primaryKey = "ID";
+    protected $params = [];
+    protected $arCache = [];
 
-    private
-        $_errorMesage = '',
-        $_lastOperation = false;
+    private $_errorMesage = '';
+    private $_lastOperation = false;
 
     public function __construct()
     {
         $this->fields = $this->getMap();
         $this->reverseFields();
-     }
+    }
 
 
-    public function getList(array $params = array())
+    public function getList(array $params = [])
     {
         // если передан параметр group, то данные select игнорируем
-        if ( isset($params["group"]) ) {
+        if (isset($params["group"])) {
             $params["select"] = $params["group"];
         }
         $this->params = $params;
@@ -65,7 +64,7 @@ class BaseElement implements IElement
         $this->setLastOperation('');
     }
 
-    public function getRow(array $params = array())
+    public function getRow(array $params = [])
     {
         $params["limit"] = 1;
         $result = $this->getList($params);
@@ -102,7 +101,7 @@ class BaseElement implements IElement
             "filter" => $filter,
         ));
 
-        if ( $item ) {
+        if ($item) {
             if ($id = $item[$this->primaryKey]) {
                 $this->update($id, $params);
             }
@@ -128,7 +127,7 @@ class BaseElement implements IElement
         return $this->_errorMesage;
     }
 
-    public function setCompressedFields(array $fields = array())
+    public function setCompressedFields(array $fields = [])
     {
         return $this->compressedFields = $fields;
     }
@@ -138,7 +137,7 @@ class BaseElement implements IElement
         return $this->compressedFields;
     }
 
-    public function setFields(array $fields = array())
+    public function setFields(array $fields = [])
     {
         return $this->fields = $fields;
     }
@@ -223,8 +222,8 @@ class BaseElement implements IElement
      */
     protected function updateParams()
     {
-        if ( empty($this->params) ) {
-            $this->params = array();
+        if (empty($this->params)) {
+            $this->params = [];
         }
         $this->updateParamsFilter();
         $this->updateParamsSelect();
@@ -239,16 +238,16 @@ class BaseElement implements IElement
      */
     protected function updateParamsSelect()
     {
-        if ( empty($this->params["select"]) ) {
+        if (empty($this->params["select"])) {
             $this->params["select"] = array_keys($this->fields);
         }
 
-        if ( !empty($this->fields) ) {
+        if (!empty($this->fields)) {
 
-            $result = array();
+            $result = [];
             foreach ($this->params["select"] as $key => $value) {
-                if ( isset($this->fields[$value]) ) {
-                    if ( !is_array($this->fields[$value]) ) {
+                if (isset($this->fields[$value])) {
+                    if (!is_array($this->fields[$value])) {
                         $result[] = $this->fields[$value];
                     } else {
                         $result[$value] = $value . "_." . $this->fields[$value]["name"];
@@ -286,11 +285,11 @@ class BaseElement implements IElement
      */
     protected function updateParamsGroup()
     {
-        if ( ( !empty($this->params["group"]) ) && ( !empty($this->fields) ) ) {
-            $result = array();
+        if ((!empty($this->params["group"])) && (!empty($this->fields))) {
+            $result = [];
             foreach ($this->params["group"] as $key => $value) {
-                if ( isset($this->fields[$value]) ) {
-                    if ( !is_array($this->fields[$value]) ) {
+                if (isset($this->fields[$value])) {
+                    if (!is_array($this->fields[$value])) {
                         $result[] = $this->fields[$value];
                     } else {
                         $result[] = $value;
@@ -305,17 +304,17 @@ class BaseElement implements IElement
 
     protected function updateParamsBase($paramName)
     {
-        $params = ( !empty($this->params[$paramName]) ) ? $this->params[$paramName] : array();
+        $params = ( !empty($this->params[$paramName]) ) ? $this->params[$paramName] : [];
         $this->params[$paramName] = $this->getUpdatedParamsFromArray($params);
     }
 
     protected function getUpdatedParamsFromArray(array $params)
     {
-        $result = array();
-        if ( ( !empty($params) ) && ( !empty($this->fields) ) ) {
+        $result = [];
+        if ((!empty($params) ) && ( !empty($this->fields))) {
             foreach ($params as $key => $value) {
-                if ( $fieldName = $this->getCleanFieldName($key) ) {
-                    if ( !is_array($this->fields[$fieldName["name"]]) ) {
+                if ($fieldName = $this->getCleanFieldName($key)) {
+                    if (!is_array($this->fields[$fieldName["name"]])) {
                         $result[$fieldName["prefix"] . $this->fields[$fieldName["name"]]] = $value;
                     } else {
                         $result[$key] = $value;
@@ -328,10 +327,10 @@ class BaseElement implements IElement
         return $result;
     }
 
-    private function getCleanFieldName ($key)
+    private function getCleanFieldName($key)
     {
         $prefix = substr($key, 0, 1);
-        $result = ( ( in_array($prefix, array("!", ">", "<", "=", "%") ) )
+        $result = ((in_array($prefix, array("!", ">", "<", "=", "%")))
             ? array("name" => substr($key, 1), "prefix" => $prefix)
             : ( ( isset($this->fields[$key]) )
                 ? array("name" => $key, "prefix" => "")
@@ -349,7 +348,7 @@ class BaseElement implements IElement
      */
     protected function getRenamed($item)
     {
-        if ( !empty($this->reversedFields) ) {
+        if (!empty($this->reversedFields)) {
             foreach ($item as $key => $value) {
                 $fieldName = ( isset($this->reversedFields[$key]) )
                     ? $this->reversedFields[$key]
@@ -377,7 +376,7 @@ class BaseElement implements IElement
     {
         $this->arCache["exists"] = false;
         $this->arCache["id"] = $cacheId;
-        if ( $this->arCache["cachePeriod"] > 0 ) {
+        if ($this->arCache["cachePeriod"] > 0) {
             $cache = \Bitrix\Main\Data\cache::createInstance();
             $this->arCache["exists"] = $cache->initCache(
                 $this->arCache["cachePeriod"],
@@ -395,7 +394,7 @@ class BaseElement implements IElement
     /* сохраняем данные в кэш при установленном периоде кэширования */
     protected function _saveCache($cache, $vars)
     {
-        if ( ( $this->arCache["cachePeriod"] > 0 ) && $cache && $vars ) {
+        if (($this->arCache["cachePeriod"] > 0) && $cache && $vars) {
             $cache->startDataCache();
             $cache->endDataCache($vars);
             $result = true;
@@ -415,10 +414,10 @@ class BaseElement implements IElement
 
     protected function _isCacheExists()
     {
-        if ( isset( $this->arCache )
-            && is_array( $this->arCache )
-            && isset( $this->arCache["exists"] )
-            ) {
+        if (isset($this->arCache)
+            && is_array($this->arCache)
+            && isset($this->arCache["exists"])
+        ) {
             $result = $this->arCache["exists"];
         } else {
             $result = false;
@@ -427,7 +426,7 @@ class BaseElement implements IElement
         return $result;
     }
 
-    protected function updateValueForReverse ($value)
+    protected function updateValueForReverse($value)
     {
         return $value;
     }
@@ -439,9 +438,9 @@ class BaseElement implements IElement
      */
     private function reverseFields()
     {
-        if ( !empty($this->fields) ) {
+        if (!empty($this->fields)) {
             foreach ($this->fields as $key => $value) {
-                if ( !is_array($this->fields[$key]) ) {
+                if (!is_array($this->fields[$key])) {
                     $this->reversedFields[$this->updateValueForReverse($value)] = $key;
                 }
             }
@@ -459,5 +458,4 @@ class BaseElement implements IElement
     {
         $this->fields = array_merge($this->fieldsBase, $this->fields);
     }
-
 }

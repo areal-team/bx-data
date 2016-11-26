@@ -10,8 +10,8 @@ namespace Akop;
  */
 interface ICache
 {
-	function _createCacheInstance($cacheId);
-	function _saveCache($cache, $vars);
-	function _clearCache();
-	function _isCacheExists();
+    public function _createCacheInstance($cacheId);
+    public function _saveCache($cache, $vars);
+    public function _clearCache();
+    public function _isCacheExists();
 }

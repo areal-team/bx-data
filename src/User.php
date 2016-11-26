@@ -1,10 +1,10 @@
-<?
+<?php
 namespace Akop;
 
 class User extends \CUser
 {
 
-    public function AuthByLogin($login)
+    public function authByLogin($login)
     {
         $user = $this->GetByLogin($login)->fetch();
         return $this->Authorize($user["ID"]);
@@ -28,6 +28,6 @@ class User extends \CUser
     public function getFullName($userId)
     {
         $user = $this->GetByID($userId)->Fetch();
-		return $user["NAME"].($user["NAME"] == '' || $user["LAST_NAME"] == ''? "":" ").$user["LAST_NAME"];
+        return $user["NAME"].($user["NAME"] == '' || $user["LAST_NAME"] == ''? "":" ").$user["LAST_NAME"];
     }
 }

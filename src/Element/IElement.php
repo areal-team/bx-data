@@ -10,7 +10,6 @@ namespace Akop\Element;
  */
 interface IElement
 {
-	public function getList(array $params = array());
-	public function getRow(array $params = array());
+    public function getList(array $params = array());
+    public function getRow(array $params = array());
 }
-?>

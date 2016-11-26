@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Akop\Element;
 
 \CModule::IncludeModule("iblock");
@@ -29,7 +29,7 @@ class EnumElement extends BaseElement
             $params["order"],
             $params["filter"]
         );
-        while ( $prop = $objProp->Fetch() ) {
+        while ($prop = $objProp->Fetch()) {
             $result[$prop['ID']] = $prop;
         }
         return $result;

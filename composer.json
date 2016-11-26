@@ -1,9 +1,9 @@
 {
     "name": "aak74/bitrix",
-    "version": "0.1.0",
-    "description": "Convinient classes for 1C-Bitrix framework",
+    "version": "0.2.0",
+    "description": "Классы для удобного доступа к данным в 1C-Bitrix",
     "license": "MIT",
-    "keywords": ["bitrix", "1c-bitrix", "classes", "akop", "highload blocks"],
+    "keywords": ["bitrix", "1c-bitrix", "classes", "akop", "highload blocks", "битрикс", "1С-битрикс"],
     "type": "bitrix-d7-module",
     "authors": [
         {
