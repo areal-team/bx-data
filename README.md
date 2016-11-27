@@ -1,5 +1,9 @@
 # Удобные классы для доступа к данным в 1C-Bitrix одинаковым способом
 
+[![Latest Stable Version](https://poser.pugx.org/aak74/bx-data/v/stable)](https://packagist.org/packages/aak74/bx-data)
+[![Latest Unstable Version](https://poser.pugx.org/aak74/bx-data/v/unstable)](https://packagist.org/packages/aak74/bx-data)
+[![License](https://poser.pugx.org/aak74/bx-data/license)](https://packagist.org/packages/aak74/bx-data)
+
 Вне зависимости от того инфоблок это или highload блок.
 
 * Вам больше не нужно помнить какой ID у инфоблока.
