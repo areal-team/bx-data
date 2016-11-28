@@ -1,5 +1,5 @@
 # Удобные классы для доступа к данным в 1C-Bitrix одинаковым способом
-
+[![Build Status](https://api.travis-ci.org/aak74/bx-data.svg?branch=master)](https://travis-ci.org/aak74/bx-data)
 [![Latest Stable Version](https://poser.pugx.org/aak74/bx-data/v/stable)](https://packagist.org/packages/aak74/bx-data)
 [![Latest Unstable Version](https://poser.pugx.org/aak74/bx-data/v/unstable)](https://packagist.org/packages/aak74/bx-data)
 [![License](https://poser.pugx.org/aak74/bx-data/license)](https://packagist.org/packages/aak74/bx-data)
