@@ -1,13 +1,14 @@
 <?php
+namespace AkopTests;
 
-class BaseElementTest extends PHPUnit_Framework_TestCase
+class BaseElementTest extends \PHPUnit_Framework_TestCase
 {
     protected $testingClass;
 
     public function setUp()
     {
         // initBitrixCore();
-        $this->testingClass = new \Gb\Element\BaseElement;
+        $this->testingClass = new \Akop\Element\BaseElement;
     }
 
     public function testFieldsEmptyArray()
@@ -60,9 +61,4 @@ class BaseElementTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($dataFields["name"], $uncompressedData["name"]);
         $this->assertEquals($dataFields["long_description"], $uncompressedData["long_description"]);
     }
-
-
 }
-
-
-?>

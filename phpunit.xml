@@ -1,5 +1,5 @@
 <phpunit
-        bootstrap="bootstrap.php"
+        bootstrap="tests/bootstrap.php"
         colors="true">
 	<php>
 		<includePath>.</includePath>
@@ -7,7 +7,7 @@
 	</php>
     <testsuites>
         <testsuite name="Testsuite for Akop Classes">
-            <directory>./</directory>
+            <directory>./tests/</directory>
         </testsuite>
     </testsuites>
 </phpunit>

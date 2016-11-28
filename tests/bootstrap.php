@@ -9,11 +9,23 @@ define("BX_BUFFER_USED", true);
 // $GLOBALS["DBType"] = 'mysql';
 $_SERVER["DOCUMENT_ROOT"] = __DIR__ . '/../../../..';
 // require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_before.php");
-//
+/*
 require_once($_SERVER["DOCUMENT_ROOT"] . '/local/classes/Akop/autoload.php');
 $loader = new Psr4AutoloaderClass();
 $loader->register();
 $loader->addNamespace('Akop', $_SERVER["DOCUMENT_ROOT"] . "/local/classes/Akop/");
+*/
+echo __DIR__ . '/../autoload.php';
+echo file_get_contents(__DIR__ . '/../vendor/autoload.php');
+
+if (!@include_once __DIR__ . '/../vendor/autoload.php') {
+    $message = <<<MSG
+You must set up the project dependencies, run the following commands:
+> wget http://getcomposer.org/composer.phar
+> php composer.phar install
+MSG;
+    exit($message);
+}
 
 while (ob_get_level()) {
     ob_end_flush();
@@ -21,7 +33,7 @@ while (ob_get_level()) {
 
 function initBitrixCore()
 {
-	// manual saving of DB resource
+    // manual saving of DB resource
     global $DB;
     CModule::includeModule('iblock');
 
