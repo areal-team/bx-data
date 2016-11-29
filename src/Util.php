@@ -27,18 +27,28 @@ class Util
         echo '</pre>';
     }
 
+    public static function showLastQuery()
+    {
+        self::pre(self::getLastQuery(), 'Last query');
+    }
+
     public static function getLastQuery()
     {
         \Bitrix\Main\Loader::includeModule("iblock");
         $query = new \Bitrix\Main\Entity\Query(\Bitrix\Iblock\ElementTable::getEntity());
-        self::pr_var($query->getLastQuery(), 'Last query');
+        return $query->getLastQuery();
+    }
+
+    public static function showQueryDump()
+    {
+        self::pre(self::getQueryDump(), 'Query dump');
     }
 
     public static function getQueryDump()
     {
         \Bitrix\Main\Loader::includeModule("iblock");
         $query = new \Bitrix\Main\Entity\Query(\Bitrix\Iblock\ElementTable::getEntity());
-        self::pr_var($query->dump(), 'Query dump');
+        return $query->dump();
     }
 
     public static function camelize($input, $separator = '_')
