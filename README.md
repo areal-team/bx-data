@@ -12,14 +12,14 @@
    блока.
 
 ## Использование
-Для получения списка моделей авто доьсаточно написать:
+Для получения списка моделей авто достаточно написать:
 ```php
 $models = new \App\Catalog\Model;
 $result = $models->getList();
 ```
 В переменной $result вы получаете массив моделей. Больше никаких циклов, никаких GetNext, Fetch и прочего.
 
-Выборка с фильтром, сортировкой и ограничением полей:
+### Выборка с фильтром, сортировкой и ограничением полей:
 ```php
 $models = new \App\Catalog\Model;
 $result = $models->getList([
@@ -28,8 +28,21 @@ $result = $models->getList([
     "order" => ["name" => "asc"],
 ]);
 ```
+#### В БД уйдет один запрос вида:
+```sql
+SELECT
+    `model`.`ID` AS `ID`,
+    `model`.`UF_NAME` AS `UF_NAME`,
+    `model`.`UF_BRAND` AS `UF_BRAND`,
+    `model_brandname_`.`UF_NAME` AS `brandName`
+FROM `b_hlbd_auto_model` `model`
+LEFT JOIN `b_hlbd_auto_brand` `model_brandname_` ON `model`.`UF_BRAND` = `model_brandname_`.`ID`
+WHERE `model`.`UF_BRAND` = 120
+AND (`model`.`UF_DELETED` IS NULL OR `model`.`UF_DELETED` = 0)
+ORDER BY `model`.`UF_NAME` ASC
+```
 
-Выборка с фильтром по значению в справочнике, сортировкой и ограничением полей:
+### Выборка с фильтром по значению в справочнике, сортировкой и ограничением полей:
 ```php
 $models = new \App\Catalog\Model;
 $result = $models->getList([
@@ -37,6 +50,18 @@ $result = $models->getList([
     "filter" => ["brandName" => "renault"],
     "order" => ["name" => "asc"],
 ]);
+```
+#### В БД уйдет один запрос вида:
+```sql
+SELECT 
+    `model`.`ID` AS `ID`,
+    `model`.`UF_NAME` AS `UF_NAME`,
+    `model`.`UF_BRAND` AS `UF_BRAND`,
+    `model_brandname_`.`UF_NAME` AS `brandName`
+FROM `b_hlbd_auto_model` `model` 
+LEFT JOIN `b_hlbd_auto_brand` `model_brandname_` ON `model`.`UF_BRAND` = `model_brandname_`.`ID`
+WHERE UPPER(`model_brandname_`.`UF_NAME`) like upper('renault')
+AND (`model`.`UF_DELETED` IS NULL OR `model`.`UF_DELETED` = 0)
 ```
 
 Вы можете сказать:
@@ -61,7 +86,7 @@ class Model extends \Akop\Element\HlElement
 Установка происходит стандартным для [composer](http://getcomposer.org/) способом:
 
 ```
-composer require aak74/bx-data:dev-master
+composer require aak74/bx-data
 ```
 
 [Демосайт](http://demo.gbdev.xyz/)
