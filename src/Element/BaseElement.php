@@ -5,7 +5,7 @@ use \Bitrix\Main\Data\cache;
 
 class BaseElement implements IElement
 {
-/*
+    /*
     static $triple_char = array(
         "!><"=>"NB", //not between
         "!=%"=>"NM", //not Identical by like
@@ -157,7 +157,8 @@ class BaseElement implements IElement
 
     public function compress($fieldName, $fieldValue)
     {
-        return ( in_array($fieldName, $this->compressedFields) )
+        // \Akop\Util::pre([in_array($fieldName, $this->compressedFields), $fieldValue, $fieldName], 'BaseElement compress');
+        return (in_array($fieldName, $this->compressedFields))
             ? bin2hex(gzcompress($fieldValue))
             : $fieldValue;
     }
@@ -172,7 +173,7 @@ class BaseElement implements IElement
 
     public function uncompress($fieldName, $fieldValue)
     {
-        return ( in_array($fieldName, $this->compressedFields) )
+        return (in_array($fieldName, $this->compressedFields))
             ? gzuncompress(hex2bin($fieldValue))
             : $fieldValue;
     }
@@ -229,7 +230,6 @@ class BaseElement implements IElement
         $this->updateParamsSelect();
         $this->updateParamsOrder();
         $this->updateParamsGroup();
-
     }
 
     /**
@@ -243,7 +243,6 @@ class BaseElement implements IElement
         }
 
         if (!empty($this->fields)) {
-
             $result = [];
             foreach ($this->params["select"] as $key => $value) {
                 if (isset($this->fields[$value])) {
@@ -304,14 +303,14 @@ class BaseElement implements IElement
 
     protected function updateParamsBase($paramName)
     {
-        $params = ( !empty($this->params[$paramName]) ) ? $this->params[$paramName] : [];
+        $params = (!empty($this->params[$paramName])) ? $this->params[$paramName] : [];
         $this->params[$paramName] = $this->getUpdatedParamsFromArray($params);
     }
 
     protected function getUpdatedParamsFromArray(array $params)
     {
         $result = [];
-        if ((!empty($params) ) && ( !empty($this->fields))) {
+        if ((!empty($params)) && (!empty($this->fields))) {
             foreach ($params as $key => $value) {
                 if ($fieldName = $this->getCleanFieldName($key)) {
                     if (!is_array($this->fields[$fieldName["name"]])) {
@@ -332,7 +331,7 @@ class BaseElement implements IElement
         $prefix = substr($key, 0, 1);
         $result = ((in_array($prefix, array("!", ">", "<", "=", "%")))
             ? array("name" => substr($key, 1), "prefix" => $prefix)
-            : ( ( isset($this->fields[$key]) )
+            : ((isset($this->fields[$key]))
                 ? array("name" => $key, "prefix" => "")
                 : false
             )
@@ -350,7 +349,7 @@ class BaseElement implements IElement
     {
         if (!empty($this->reversedFields)) {
             foreach ($item as $key => $value) {
-                $fieldName = ( isset($this->reversedFields[$key]) )
+                $fieldName = (isset($this->reversedFields[$key]))
                     ? $this->reversedFields[$key]
                     : $key;
 
