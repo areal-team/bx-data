@@ -4,17 +4,6 @@ namespace Akop;
 class Util
 {
 
-    public static function getResult($result, $res)
-    {
-        $resultKey = ( $res )
-            ? "updated"
-            : "failed";
-        $result[$resultKey]++;
-
-        return $result;
-    }
-
-
     public static function pre($var, $title = '')
     {
         echo '<h3>'.$title.'</h3>';
