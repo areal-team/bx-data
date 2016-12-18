@@ -54,6 +54,7 @@ class HlElement extends BaseElement
             "filter" => $filter
         ));
         $blockEl = $objBlock->Fetch();
+        // \Akop\Util::pre($blockEl, '__construct blockEl');
         try {
             $this->hlblockId = $blockEl["ID"];
             $this->hlblockName = $blockEl["NAME"];
@@ -86,7 +87,6 @@ class HlElement extends BaseElement
 
 
             while ($el = $res->Fetch()) {
-
                 $key = ( isset($el["ID"]) )
                     ? $el["ID"]
                     : count($result);
@@ -114,6 +114,7 @@ class HlElement extends BaseElement
     public function add(array $params)
     {
         $this->beforeAdd();
+        $params = $this->compressFields($params);
         $params = $this->getUpdatedParamsFromArray($params);
         $result = $this->entityDC->add($params);
         $id = $result->getId();
