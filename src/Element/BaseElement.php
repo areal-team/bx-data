@@ -64,6 +64,11 @@ class BaseElement implements IElement
         $this->setLastOperation('');
     }
 
+    public function count()
+    {
+        return count($this->getList(['select' => $this->primaryKey]));
+    }
+
     public function getRow(array $params = [])
     {
         $params["limit"] = 1;
