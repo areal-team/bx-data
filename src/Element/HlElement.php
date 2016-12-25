@@ -79,8 +79,8 @@ class HlElement extends BaseElement
     {
         parent::getList($params);
 
-        $cache = $this->_createCacheInstance(md5(json_encode($this->params)));
-        if ($this->_isCacheExists()) {
+        $cache = $this->createCacheInstance(md5(json_encode($this->params)));
+        if ($this->isCacheExists()) {
             $result = $cache->GetVars();
         } else {
             $res = $this->entityDC->getList($this->params);
@@ -93,7 +93,7 @@ class HlElement extends BaseElement
 
                 $result[$key] = $this->getRenamed($el);
             }
-            $this->_saveCache(
+            $this->saveCache(
                 $cache,
                 $result
             );

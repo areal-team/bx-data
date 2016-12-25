@@ -3,6 +3,9 @@ namespace Akop\Element;
 
 use \Bitrix\Main\Data\cache;
 
+/**
+ *
+ */
 class BaseElement implements IElement
 {
     /*
@@ -23,7 +26,7 @@ class BaseElement implements IElement
         "!@"=>"NIN", //Identical by like
     );
 */
-    private static $single_char = [
+    private static $singleChars = [
         "="=>"I", //Identical
         "%"=>"S", //substring
         "?"=>"?", //logical
@@ -43,8 +46,8 @@ class BaseElement implements IElement
     protected $params = [];
     protected $arCache = [];
 
-    private $_errorMesage = '';
-    private $_lastOperation = false;
+    private $errorMesage = '';
+    private $lastOperation = false;
 
     public function __construct()
     {
@@ -52,7 +55,11 @@ class BaseElement implements IElement
         $this->reverseFields();
     }
 
-
+    /**
+     * Возвращает набор строк
+     * @param $params array допустимы параметры: select, filter, limit, order
+     * @return array
+     */
     public function getList(array $params = [])
     {
         // если передан параметр group, то данные select игнорируем
@@ -64,6 +71,11 @@ class BaseElement implements IElement
         $this->setLastOperation('');
     }
 
+    /**
+     * Возвращает одну строку
+     * @param $params array допустимы параметры: select, filter, limit, order
+     * @return array
+     */
     public function getRow(array $params = [])
     {
         $params["limit"] = 1;
@@ -74,6 +86,10 @@ class BaseElement implements IElement
             : false;
     }
 
+    /**
+     * Добавляет элемент
+     * @param $params array набор полей для записи в БД
+     */
     public function add(array $params)
     {
         $this->beforeAdd();
@@ -81,19 +97,35 @@ class BaseElement implements IElement
         $this->afterAdd();
     }
 
-    public function delete($id)
+    /**
+    * Удаляет элемент
+    * @param $primaryKey
+    */
+    public function delete($primaryKey)
     {
-        $this->afterDelete();
+
     }
 
-    public function update($id, array $params)
+    /**
+    * Обновляет элемент
+    * @param $primaryKey integer
+    * @param $params array набор полей для записи в БД
+    */
+    public function update($primaryKey, array $params)
     {
         $this->beforeUpdate();
         $params = $this->compressFields($params);
         $this->afterUpdate();
     }
 
-    /* Добавляем данные или обновляем их */
+    /**
+     * Обновляет данные или добавляет их
+     * Если будет найдена строка по параметру $filter,
+     * то данные обновляются
+     * в противном случае данные добавляются
+     * @param $filter array
+     * @param $params array набор полей для записи в БД
+     */
     public function upsert(array $filter, array $params)
     {
         $item = $this->getRow(array(
@@ -101,19 +133,25 @@ class BaseElement implements IElement
             "filter" => $filter,
         ));
 
-        if ($item) {
-            if ($id = $item[$this->primaryKey]) {
-                $this->update($id, $params);
-            }
+        if ($item && $primaryKey = $item[$this->primaryKey]) {
+            $this->update($primaryKey, $params);
         } else {
-            $id = $this->add($params);
+            $primaryKey = $this->add($params);
         }
-        return $id;
+        return $primaryKey;
+    }
+
+    /**
+     * Возвращает количество элементов в таблице
+     */
+    public function count()
+    {
+        return count($this->getList(['select' => $this->primaryKey]));
     }
 
     public function getLastOperation()
     {
-        return $this->_lastOperation;
+        return $this->lastOperation;
     }
 
     public function getMap()
@@ -124,7 +162,7 @@ class BaseElement implements IElement
 
     public function getErrorMessage()
     {
-        return $this->_errorMesage;
+        return $this->errorMesage;
     }
 
     public function setCompressedFields(array $fields = [])
@@ -147,7 +185,7 @@ class BaseElement implements IElement
         return $this->fields;
     }
 
-    public function compressFields(array $fields)
+    protected function compressFields(array $fields)
     {
         foreach ($fields as $fieldName => $fieldValue) {
             $result[$fieldName] = $this->compress($fieldName, $fieldValue);
@@ -155,15 +193,14 @@ class BaseElement implements IElement
         return $result;
     }
 
-    public function compress($fieldName, $fieldValue)
+    protected function compress($fieldName, $fieldValue)
     {
-        // \Akop\Util::pre([in_array($fieldName, $this->compressedFields), $fieldValue, $fieldName], 'BaseElement compress');
         return (in_array($fieldName, $this->compressedFields))
             ? bin2hex(gzcompress($fieldValue))
             : $fieldValue;
     }
 
-    public function uncompressFields(array $fields)
+    protected function uncompressFields(array $fields)
     {
         foreach ($fields as $fieldName => $fieldValue) {
             $result[$fieldName] = $this->uncompress($fieldName, $fieldValue);
@@ -171,7 +208,7 @@ class BaseElement implements IElement
         return $result;
     }
 
-    public function uncompress($fieldName, $fieldValue)
+    protected function uncompress($fieldName, $fieldValue)
     {
         return (in_array($fieldName, $this->compressedFields))
             ? gzuncompress(hex2bin($fieldValue))
@@ -196,29 +233,30 @@ class BaseElement implements IElement
     protected function afterAdd()
     {
         $this->setLastOperation('add');
-        $this->_clearCache();
+        $this->clearCache();
     }
 
     protected function afterDelete()
     {
         $this->setLastOperation('delete');
-        $this->_clearCache();
+        $this->clearCache();
     }
 
     protected function afterUpdate()
     {
         $this->setLastOperation('update');
-        $this->_clearCache();
+        $this->clearCache();
     }
 
-    protected function isDeletable($id)
+    protected function isDeletable($primaryKey)
     {
         return true;
     }
 
     /**
      * Обновляет параметры для функции getList
-     * переименовывает поля, добавляет секцию runtime, устанавливает доп фильтр к выборке
+     * переименовывает поля, добавляет секцию runtime,
+     * устанавливает доп фильтр к выборке
      * @return [type] [description]
      */
     protected function updateParams()
@@ -244,7 +282,7 @@ class BaseElement implements IElement
 
         if (!empty($this->fields)) {
             $result = [];
-            foreach ($this->params["select"] as $key => $value) {
+            foreach ($this->params["select"] as $value) {
                 if (isset($this->fields[$value])) {
                     if (!is_array($this->fields[$value])) {
                         $result[] = $this->fields[$value];
@@ -286,16 +324,11 @@ class BaseElement implements IElement
     {
         if ((!empty($this->params["group"])) && (!empty($this->fields))) {
             $result = [];
-            foreach ($this->params["group"] as $key => $value) {
-                if (isset($this->fields[$value])) {
-                    if (!is_array($this->fields[$value])) {
-                        $result[] = $this->fields[$value];
-                    } else {
-                        $result[] = $value;
-                    }
-                } else {
-                    $result[] = $value;
-                }
+            foreach ($this->params["group"] as $value) {
+                $result[] = ((!isset($this->fields[$value]) || is_array($this->fields[$value]))
+                    ? $value
+                    : $this->fields[$value]
+                );
             }
             $this->params["group"] = $result;
         }
@@ -312,15 +345,12 @@ class BaseElement implements IElement
         $result = [];
         if ((!empty($params)) && (!empty($this->fields))) {
             foreach ($params as $key => $value) {
-                if ($fieldName = $this->getCleanFieldName($key)) {
-                    if (!is_array($this->fields[$fieldName["name"]])) {
-                        $result[$fieldName["prefix"] . $this->fields[$fieldName["name"]]] = $value;
-                    } else {
-                        $result[$key] = $value;
-                    }
-                } else {
-                    $result[$key] = $value;
-                }
+                $fieldName = $this->getCleanFieldName($key);
+                $resultKey = ($fieldName && !is_array($this->fields[$fieldName["name"]])
+                    ? $fieldName["prefix"] . $this->fields[$fieldName["name"]]
+                    : $key
+                );
+                $result[$resultKey] = $value;
             }
         }
         return $result;
@@ -329,7 +359,7 @@ class BaseElement implements IElement
     private function getCleanFieldName($key)
     {
         $prefix = substr($key, 0, 1);
-        $result = ((in_array($prefix, array("!", ">", "<", "=", "%")))
+        $result = ((in_array($prefix, array_keys($this->singleChars)))
             ? array("name" => substr($key, 1), "prefix" => $prefix)
             : ((isset($this->fields[$key]))
                 ? array("name" => $key, "prefix" => "")
@@ -362,19 +392,23 @@ class BaseElement implements IElement
 
     protected function setLastOperation($operation)
     {
-        $this->_lastOperation = $operation;
+        $this->lastOperation = $operation;
     }
 
     protected function setErrorMessage($message)
     {
-        $this->_errorMesage = $message;
+        $this->errorMesage = $message;
     }
 
-    /* Создаем Instance кэша при установленном периоде кэширования и наличии в параметрах пути и ид кэша */
-    protected function _createCacheInstance($cacheId)
+    /**
+     * Создаем Instance кэша при установленном периоде кэширования
+     * и наличии в параметрах пути и ид кэша
+     */
+    protected function createCacheInstance($cacheId)
     {
         $this->arCache["exists"] = false;
         $this->arCache["id"] = $cacheId;
+        $result = false;
         if ($this->arCache["cachePeriod"] > 0) {
             $cache = \Bitrix\Main\Data\cache::createInstance();
             $this->arCache["exists"] = $cache->initCache(
@@ -382,28 +416,26 @@ class BaseElement implements IElement
                 $cacheId,
                 $this->arCache["path"]
             );
-
             $result = $cache;
-        } else {
-            $result = false;
         }
         return $result;
     }
 
-    /* сохраняем данные в кэш при установленном периоде кэширования */
-    protected function _saveCache($cache, $vars)
+    /**
+     * сохраняем данные в кэш при установленном периоде кэширования
+     */
+    protected function saveCache($cache, $vars)
     {
+        $result = false;
         if (($this->arCache["cachePeriod"] > 0) && $cache && $vars) {
             $cache->startDataCache();
             $cache->endDataCache($vars);
             $result = true;
-        } else {
-            $result = false;
         }
         return $result;
     }
 
-    protected function _clearCache()
+    protected function clearCache()
     {
         $cache = \Bitrix\Main\Data\Cache::createInstance();
         $cache->cleanDir(
@@ -411,15 +443,14 @@ class BaseElement implements IElement
         );
     }
 
-    protected function _isCacheExists()
+    protected function isCacheExists()
     {
+        $result = false;
         if (isset($this->arCache)
             && is_array($this->arCache)
             && isset($this->arCache["exists"])
         ) {
             $result = $this->arCache["exists"];
-        } else {
-            $result = false;
         }
 
         return $result;
@@ -448,13 +479,16 @@ class BaseElement implements IElement
 
 
     /**
-     * Объединение массивов полей у базового класса и его наследников
+     * Объединение массивов полей у базового класса
+     * и его наследников
      * Этот массив в дальнейшем используется для операций с БД
      * @return [type] [description]
      * @deprecated Необходимо использовать getMap
      */
+     /*
     private function mergeFields()
     {
         $this->fields = array_merge($this->fieldsBase, $this->fields);
     }
+    */
 }

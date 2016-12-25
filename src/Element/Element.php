@@ -97,8 +97,8 @@ class Element extends IbElementOrSection
             $params["isAssoc"] = true;
         }
 
-        $cache = $this->_createCacheInstance(md5(json_encode($params)));
-        if ($this->_isCacheExists()) {
+        $cache = $this->createCacheInstance(md5(json_encode($params)));
+        if ($this->isCacheExists()) {
             $result = $cache->GetVars();
         } else {
             if (!empty($params["limit"])) {
@@ -143,7 +143,7 @@ class Element extends IbElementOrSection
                 $result[$key] = $this->getRenamed($el);
             }
 
-            $this->_saveCache(
+            $this->saveCache(
                 $cache,
                 $result
             );
