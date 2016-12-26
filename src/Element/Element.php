@@ -14,7 +14,6 @@ class Element extends IbElementOrSection
 {
     protected $rename = [];
     protected $select = false;
-    protected $cachePath = "element/";
     protected $noLimit = false;
     protected $fieldsBase = [
         "id" => "ID",
@@ -40,7 +39,6 @@ class Element extends IbElementOrSection
 
     /**
      * @param integer $iblockId
-     * @param string $cachePath
      * @param bool|bool $noLimit - устанавливать в true при необходимости выборки без ограничений (это черевато нехваткой памяти)
      * @return void
      * @important
@@ -48,14 +46,8 @@ class Element extends IbElementOrSection
     public function __construct(array $params = array())
     {
         $this->setIblockId($params);
-        $this->noLimit = ( isset($params["noLimit"]) ? $params["noLimit"] : $this->noLimit );
+        $this->noLimit = (isset($params["noLimit"]) ? $params["noLimit"] : $this->noLimit);
 
-        /* Не всегда нужно кэшировать подобные запросы, при сохранении кэша может вылететь ошибка.
-        К тому же кэширование пусть будет на более высоком уровне */
-        $this->arCache = array(
-            "path" => ( isset($params["cachePath"]) ? $params["cachePath"] : $this->cachePath ),
-            "cachePeriod" => ( isset($params["cachePeriod"]) ? $params["cachePeriod"] : $this->cachePeriod )
-        );
         parent::__construct();
     }
 
@@ -79,8 +71,8 @@ class Element extends IbElementOrSection
         */
 
         $params = $this->params;
-        if (( empty($params)
-            || ( count($params["filter"])  == 0 ) && empty($params["limit"]) && empty($params["select"])
+        if ((empty($params)
+            || (count($params["filter"])  == 0) && empty($params["limit"]) && empty($params["select"])
             ) && !$this->noLimit
         ) {
             throw new \Exception("Ограничьте выборку установив параметр 'filter', 'limit' или 'select'", 400);
@@ -97,15 +89,11 @@ class Element extends IbElementOrSection
             $params["isAssoc"] = true;
         }
 
-        $cache = $this->createCacheInstance(md5(json_encode($params)));
-        if ($this->isCacheExists()) {
-            $result = $cache->GetVars();
-        } else {
-            if (!empty($params["limit"])) {
-                $params["limit"] = array("nTopCount" => $params["limit"]);
-            }
+        if (!empty($params["limit"])) {
+            $params["limit"] = array("nTopCount" => $params["limit"]);
+        }
 
-            $params = array_merge(
+        $params = array_merge(
                 array(
                     "order" => false,
                     "filter" => array("IBLOCK_ID" => $this->iblockId),
@@ -134,20 +122,15 @@ class Element extends IbElementOrSection
                 $params["select"]
             );
 
-            $result = array();
-            while ($el = $obj->Fetch()) {
-                $key = ( $params["isAssoc"]
+        $result = array();
+        while ($el = $obj->Fetch()) {
+            $key = ($params["isAssoc"]
                     ? $el["ID"]
                     : count($result)
                 );
-                $result[$key] = $this->getRenamed($el);
-            }
-
-            $this->saveCache(
-                $cache,
-                $result
-            );
+            $result[$key] = $this->getRenamed($el);
         }
+
         return $result;
     }
 
@@ -252,7 +235,7 @@ class Element extends IbElementOrSection
 
     public function getPropertyCode($nameProperty)
     {
-        return ( ( stripos($this->fields[$nameProperty], "PROPERTY_") !== false )
+        return ((stripos($this->fields[$nameProperty], "PROPERTY_") !== false)
             ? substr($this->fields[$nameProperty], 9)
             : false
         );
@@ -260,7 +243,7 @@ class Element extends IbElementOrSection
 
     public function getPropertyCodeByProperty($nameProperty)
     {
-        return ( ( stripos($nameProperty, "PROPERTY_") !== false )
+        return ((stripos($nameProperty, "PROPERTY_") !== false)
             ? substr($nameProperty, 9)
             : false
         );
@@ -273,7 +256,7 @@ class Element extends IbElementOrSection
 
     protected function updateValueForReverse($value)
     {
-        return ( ( stripos($value, "PROPERTY_") !== false )
+        return ((stripos($value, "PROPERTY_") !== false)
             ? $value . "_VALUE"
             : $value
         );

@@ -1,8 +1,6 @@
 <?php
 namespace Akop\Element;
 
-use \Bitrix\Main\Data\cache;
-
 /**
  *
  */
@@ -36,7 +34,6 @@ class BaseElement implements IElement
         "@"=>"IN" // IN (new SqlExpression)
     ];
 
-    protected $cachePeriod = 3600;
     protected $fieldsBase = [];
     protected $fields = [];
     protected $reversedFields = [];
@@ -44,7 +41,6 @@ class BaseElement implements IElement
     protected $rename = [];
     protected $primaryKey = "ID";
     protected $params = [];
-    protected $arCache = [];
 
     private $errorMesage = '';
     private $lastOperation = false;
@@ -103,7 +99,6 @@ class BaseElement implements IElement
     */
     public function delete($primaryKey)
     {
-
     }
 
     /**
@@ -233,19 +228,16 @@ class BaseElement implements IElement
     protected function afterAdd()
     {
         $this->setLastOperation('add');
-        $this->clearCache();
     }
 
     protected function afterDelete()
     {
         $this->setLastOperation('delete');
-        $this->clearCache();
     }
 
     protected function afterUpdate()
     {
         $this->setLastOperation('update');
-        $this->clearCache();
     }
 
     protected function isDeletable($primaryKey)
@@ -400,67 +392,10 @@ class BaseElement implements IElement
         $this->errorMesage = $message;
     }
 
-    /**
-     * Создаем Instance кэша при установленном периоде кэширования
-     * и наличии в параметрах пути и ид кэша
-     */
-    protected function createCacheInstance($cacheId)
-    {
-        $this->arCache["exists"] = false;
-        $this->arCache["id"] = $cacheId;
-        $result = false;
-        if ($this->arCache["cachePeriod"] > 0) {
-            $cache = \Bitrix\Main\Data\cache::createInstance();
-            $this->arCache["exists"] = $cache->initCache(
-                $this->arCache["cachePeriod"],
-                $cacheId,
-                $this->arCache["path"]
-            );
-            $result = $cache;
-        }
-        return $result;
-    }
-
-    /**
-     * сохраняем данные в кэш при установленном периоде кэширования
-     */
-    protected function saveCache($cache, $vars)
-    {
-        $result = false;
-        if (($this->arCache["cachePeriod"] > 0) && $cache && $vars) {
-            $cache->startDataCache();
-            $cache->endDataCache($vars);
-            $result = true;
-        }
-        return $result;
-    }
-
-    protected function clearCache()
-    {
-        $cache = \Bitrix\Main\Data\Cache::createInstance();
-        $cache->cleanDir(
-            $this->arCache["path"]
-        );
-    }
-
-    protected function isCacheExists()
-    {
-        $result = false;
-        if (isset($this->arCache)
-            && is_array($this->arCache)
-            && isset($this->arCache["exists"])
-        ) {
-            $result = $this->arCache["exists"];
-        }
-
-        return $result;
-    }
-
     protected function updateValueForReverse($value)
     {
         return $value;
     }
-
 
     /**
      * Переворачиваем поля для удобства использования

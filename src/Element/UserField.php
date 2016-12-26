@@ -13,7 +13,7 @@ class UserField extends BaseElement
             $params["filter"] = [];
         }
         if (isset($params["filter"]["blockName"])) {
-            $hl = new \Gb\Element\HlElement(array("blockName" => $params["filter"]["blockName"]));
+            $hl = new \Akop\Element\HlElement(array("blockName" => $params["filter"]["blockName"]));
             $params["filter"]["ENTITY_ID"] = "HLBLOCK_" . $hl->getBlockId();
         }
 

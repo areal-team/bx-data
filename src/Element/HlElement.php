@@ -4,7 +4,6 @@ namespace Akop\Element;
 \CModule::includeModule('highloadblock');
 
 use \Bitrix\Highloadblock as HL;
-use \Bitrix\Main\Data\cache;
 use \Akop\Element as Element;
 
 /**
@@ -12,10 +11,6 @@ use \Akop\Element as Element;
  */
 class HlElement extends BaseElement
 {
-    const
-        CACHE_PATH = "element/hlblock/";
-
-    protected $cachePeriod = 0;
     protected $prefix = "";
     protected $primaryKey = "id";
     protected $entityName = "";
@@ -65,10 +60,6 @@ class HlElement extends BaseElement
         $edc = (string) $entity->getDataClass();
         $this->entityDC = new $edc;
         // $this->id = $id;
-        $this->arCache = array(
-            "path" => self::CACHE_PATH . $this->hlblockId . '/',
-            "cachePeriod" => $this->cachePeriod
-        );
 
         parent::__construct();
         return $this;
@@ -79,24 +70,13 @@ class HlElement extends BaseElement
     {
         parent::getList($params);
 
-        $cache = $this->createCacheInstance(md5(json_encode($this->params)));
-        if ($this->isCacheExists()) {
-            $result = $cache->GetVars();
-        } else {
-            $res = $this->entityDC->getList($this->params);
-
-
-            while ($el = $res->Fetch()) {
-                $key = ( isset($el["ID"]) )
+        $res = $this->entityDC->getList($this->params);
+        while ($el = $res->Fetch()) {
+            $key = (isset($el["ID"]))
                     ? $el["ID"]
                     : count($result);
 
-                $result[$key] = $this->getRenamed($el);
-            }
-            $this->saveCache(
-                $cache,
-                $result
-            );
+            $result[$key] = $this->getRenamed($el);
         }
 
         return $result;
