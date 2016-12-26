@@ -351,7 +351,7 @@ class BaseElement implements IElement
     private function getCleanFieldName($key)
     {
         $prefix = substr($key, 0, 1);
-        $result = ((in_array($prefix, array_keys($this->singleChars)))
+        $result = ((in_array($prefix, array_keys(self::$singleChars)))
             ? array("name" => substr($key, 1), "prefix" => $prefix)
             : ((isset($this->fields[$key]))
                 ? array("name" => $key, "prefix" => "")

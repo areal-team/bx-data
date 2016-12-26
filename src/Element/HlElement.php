@@ -19,8 +19,8 @@ class HlElement extends BaseElement
         "id" => "ID",
     ];
 
-    private $id = false;
-    private $item = false;
+    // private $id = false;
+    // private $item = false;
     private $hlblockId = false;
     private $hlblockName = false;
     private $entityDC;
@@ -49,7 +49,6 @@ class HlElement extends BaseElement
             "filter" => $filter
         ));
         $blockEl = $objBlock->Fetch();
-        // \Akop\Util::pre($blockEl, '__construct blockEl');
         try {
             $this->hlblockId = $blockEl["ID"];
             $this->hlblockName = $blockEl["NAME"];
@@ -71,12 +70,12 @@ class HlElement extends BaseElement
         parent::getList($params);
 
         $res = $this->entityDC->getList($this->params);
-        while ($el = $res->Fetch()) {
-            $key = (isset($el["ID"]))
-                    ? $el["ID"]
+        while ($item = $res->Fetch()) {
+            $key = (isset($item["ID"]))
+                    ? $item["ID"]
                     : count($result);
 
-            $result[$key] = $this->getRenamed($el);
+            $result[$key] = $this->getRenamed($item);
         }
 
         return $result;
@@ -97,24 +96,24 @@ class HlElement extends BaseElement
         $params = $this->compressFields($params);
         $params = $this->getUpdatedParamsFromArray($params);
         $result = $this->entityDC->add($params);
-        $id = $result->getId();
+        $primaryKey = $result->getId();
         $this->afterAdd();
-        return $id;
+        return $primaryKey;
     }
 
-    public function delete($id)
+    public function delete($primaryKey)
     {
         $this->beforeDelete();
-        if (!$this->isDeletable($id)) {
+        if (!$this->isDeletable($primaryKey)) {
             $result = false;
             $this->setLastOperation('delete_error');
             $this->setErrorMessage("Удаление невозможно. Существуют зависимые объекты.");
         } else {
             if ($this->softDelete) {
-                $result = $this->update($id, array('UF_DELETED' => 1));
+                $result = $this->update($primaryKey, array('UF_DELETED' => 1));
                 $this->setLastOperation('soft_delete');
             } else {
-                $res = $this->entityDC->delete($id);
+                $res = $this->entityDC->delete($primaryKey);
                 parent::afterDelete();
                 $result = $res->isSuccess();
             }
@@ -122,24 +121,24 @@ class HlElement extends BaseElement
         return $result;
     }
 
-    public function undelete($id)
+    public function undelete($primaryKey)
     {
         $result = false;
         if ($this->softDelete) {
-            $result = $this->update($id, array('UF_DELETED' => 0));
+            $result = $this->update($primaryKey, array('UF_DELETED' => 0));
             $this->setLastOperation('undelete');
         }
         return $result;
     }
 
-    public function update($id, array $params)
+    public function update($primaryKey, array $params)
     {
         $this->beforeUpdate();
         $params = $this->compressFields($params);
         $params = $this->getUpdatedParamsFromArray($params);
-        $result = $this->entityDC->update($id, $params);
+        $this->entityDC->update($primaryKey, $params);
         $this->afterUpdate();
-        return $id;
+        return $primaryKey;
     }
 
     public function getBlockId()
@@ -157,13 +156,12 @@ class HlElement extends BaseElement
         global $USER_FIELD_MANAGER;
         return $USER_FIELD_MANAGER->GetUserFields($this->getObjectName());
     }
-
+/*
     private function getFieldId($fieldName)
     {
         $fields = $this->getFields();
         return $fields[$fieldName]["ID"];
     }
-
     private function getEnumValues($fieldId)
     {
         $obj = new CUserFieldEnum();
@@ -176,6 +174,7 @@ class HlElement extends BaseElement
         }
         return $result;
     }
+    */
 
     public function getMap()
     {
@@ -192,24 +191,24 @@ class HlElement extends BaseElement
             array("ENTITY_ID" => "ASC"),
             array("ENTITY_ID" => "HLBLOCK_" . $blockId)
         );
-        while ($el = $obj->Fetch()) {
-            $alias = \Akop\Util::camelize(substr($el["FIELD_NAME"], 3));
-            switch ($el["USER_TYPE_ID"]) {
+        while ($item = $obj->Fetch()) {
+            $alias = \Akop\Util::camelize(substr($item["FIELD_NAME"], 3));
+            switch ($item["USER_TYPE_ID"]) {
                 case "hlblock":
                     // список возможных значений
                     $result[$alias . "Name"] = array(
                         "name" => "UF_NAME",
-                        "data_type" => "\\" . $listBlocks[$el["SETTINGS"]["HLBLOCK_ID"]],
+                        "data_type" => "\\" . $listBlocks[$item["SETTINGS"]["HLBLOCK_ID"]],
                         "reference" => array(
-                            "=this." . $el["FIELD_NAME"] => "ref.ID"
+                            "=this." . $item["FIELD_NAME"] => "ref.ID"
                         ),
                     );
                     $alias .= "Id";
-                    $field = $el["FIELD_NAME"];
+                    $field = $item["FIELD_NAME"];
                     break;
                 default:
                     // список возможных значений
-                    $field = $el["FIELD_NAME"];
+                    $field = $item["FIELD_NAME"];
                     break;
             }
             $result[$alias] = $field;
@@ -224,11 +223,11 @@ class HlElement extends BaseElement
      * Для этого ищем ссылки в HL блоках на эту сущность.
      * Далее в этих блоках ищем записи со ссылкой на удаляемый элемент.
      * Если такие записи найдены, то запись не должна быть удалена
-     * @param  int  $id
+     * @param  int  $primaryKey
      * @return boolean
      * @todo Добавить обработку инфоблоков
      */
-    protected function isDeletable($id)
+    protected function isDeletable($primaryKey)
     {
         $obj = new Element\UserField;
         $fields = $obj->getList(array(
@@ -241,13 +240,13 @@ class HlElement extends BaseElement
         ));
 
         $result = true;
-        foreach ($fields as $key => $field) {
+        foreach ($fields as $field) {
             $obj = new Element\HlElement(array(
                 "hlblockId" => substr($field["ENTITY_ID"], 8) // убираем "HLBLOCK_"
             ));
             $list = $obj->getList(array(
                 "filter" => array(
-                    $field["FIELD_NAME"] => $id
+                    $field["FIELD_NAME"] => $primaryKey
                 )
             ));
 
