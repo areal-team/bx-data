@@ -1,5 +1,6 @@
 <?php
 // bitrix/modules/main/include.php with no authorizing and Agents execution
+/*
 define("NOT_CHECK_PERMISSIONS", true);
 define("NO_AGENT_CHECK", true);
 define("LANG", "ru");
@@ -14,10 +15,9 @@ require_once($_SERVER["DOCUMENT_ROOT"] . '/local/classes/Akop/autoload.php');
 $loader = new Psr4AutoloaderClass();
 $loader->register();
 $loader->addNamespace('Akop', $_SERVER["DOCUMENT_ROOT"] . "/local/classes/Akop/");
-*/
 echo __DIR__ . '/../autoload.php';
 echo file_get_contents(__DIR__ . '/../vendor/autoload.php');
-
+*/
 if (!@include_once __DIR__ . '/../vendor/autoload.php') {
     $message = <<<MSG
 You must set up the project dependencies, run the following commands:
@@ -26,7 +26,7 @@ You must set up the project dependencies, run the following commands:
 MSG;
     exit($message);
 }
-
+/*
 while (ob_get_level()) {
     ob_end_flush();
 }
@@ -45,3 +45,5 @@ function initBitrixCore()
     // "authorizing" as admin
     $_SESSION["SESS_AUTH"]["USER_ID"] = 1;
 }
+
+*/

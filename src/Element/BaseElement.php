@@ -180,7 +180,7 @@ class BaseElement implements IElement
         return $this->fields;
     }
 
-    protected function compressFields(array $fields)
+    public function compressFields(array $fields)
     {
         foreach ($fields as $fieldName => $fieldValue) {
             $result[$fieldName] = $this->compress($fieldName, $fieldValue);
@@ -195,7 +195,7 @@ class BaseElement implements IElement
             : $fieldValue;
     }
 
-    protected function uncompressFields(array $fields)
+    public function uncompressFields(array $fields)
     {
         foreach ($fields as $fieldName => $fieldValue) {
             $result[$fieldName] = $this->uncompress($fieldName, $fieldValue);
