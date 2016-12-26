@@ -19,7 +19,7 @@ class BaseElementTest extends \PHPUnit_Framework_TestCase
 
     public function testSetFields()
     {
-        $fields = array("name", "long_description");
+        $fields = array("name", "data");
         $this->testingClass->setFields($fields);
         $fieldsSet = $this->testingClass->getFields($fields);
         $this->assertEquals($fieldsSet, $fields);
@@ -33,7 +33,7 @@ class BaseElementTest extends \PHPUnit_Framework_TestCase
 
     public function testSetCompressedFields()
     {
-        $compressedFields = array("name", "long_description");
+        $compressedFields = array("name", "data");
         $this->testingClass->setCompressedFields($compressedFields);
         $compressedFieldsSet = $this->testingClass->getCompressedFields($compressedFields);
         $this->assertEquals($compressedFieldsSet, $compressedFields);
@@ -41,24 +41,68 @@ class BaseElementTest extends \PHPUnit_Framework_TestCase
 
     public function testSetCompressFields()
     {
-        $fields = array("name", "long_description");
-        $compressedFields = array("long_description");
-        $longDescription = str_repeat('1234567890', 100);
-        $compressedLongDescription = "789c33343236313533b7b034301c658db24659c3940500fe4ccd15";
+        $fields = array("name", "data");
+        $compressedFields = array("data");
+        $data = str_repeat('1234567890', 100);
+        $compressedSample = "789c33343236313533b7b034301c658db24659c3940500fe4ccd15";
 
         $dataFields = array(
             "name" => "Vasya",
-            "long_description" => $longDescription
+            "data" => $data
         );
         $this->testingClass->setFields($fields);
         $this->testingClass->setCompressedFields($compressedFields);
         $compressedData = $this->testingClass->compressFields($dataFields);
 
         $this->assertEquals($dataFields["name"], $compressedData["name"]);
-        $this->assertEquals($compressedLongDescription, $compressedData["long_description"]);
+        $this->assertEquals($compressedSample, $compressedData["data"]);
 
         $uncompressedData = $this->testingClass->uncompressFields($compressedData);
         $this->assertEquals($dataFields["name"], $uncompressedData["name"]);
-        $this->assertEquals($dataFields["long_description"], $uncompressedData["long_description"]);
+        $this->assertEquals($dataFields["data"], $uncompressedData["data"]);
+    }
+
+    public function testGetCleanFieldNameWithoutPrefix()
+    {
+        $this->testingClass->setFields(["fieldName"]);
+        $this->assertEquals(
+            ["name" => "fieldName", "prefix" => ""],
+            $this->testingClass->getCleanFieldName("fieldName")
+        );
+    }
+
+    public function testGetCleanFieldNameWrongFieldName()
+    {
+        $this->testingClass->setFields(["fieldName"]);
+        $this->assertEquals(
+            false,
+            $this->testingClass->getCleanFieldName("wrongFieldName")
+        );
+    }
+
+    public function testGetCleanFieldNameWrongFieldNameWithPrefix()
+    {
+        $this->testingClass->setFields(["fieldName"]);
+        $this->assertEquals(
+            false,
+            $this->testingClass->getCleanFieldName("!=wrongFieldName")
+        );
+    }
+
+    public function testGetCleanFieldName()
+    {
+        $this->testingClass->setFields(["fieldName"]);
+
+        $filterPrefixes = ["=", "%", "?", ">", "<", "!", "@",
+            "!=", "!%", "><", ">=", "<=", "=%", "%=", "!@",
+            "!><", "!=%", "!%="
+        ];
+
+        foreach ($filterPrefixes as $filterPrefix) {
+            $this->assertEquals(
+                ["name" => "fieldName", "prefix" => $filterPrefix],
+                $this->testingClass->getCleanFieldName($filterPrefix . "fieldName")
+            );
+        }
     }
 }

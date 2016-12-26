@@ -2,36 +2,15 @@
 namespace Akop\Element;
 
 /**
- *
+ * Базовый класс для элементов
+ * В нем реализован основной функционал для работы с данными
  */
 class BaseElement implements IElement
 {
-    /*
-    static $triple_char = array(
-        "!><"=>"NB", //not between
-        "!=%"=>"NM", //not Identical by like
-        "!%="=>"NM", //not Identical by like
-    );
-
-    static $double_char = array(
-        "!="=>"NI", //not Identical
-        "!%"=>"NS", //not substring
-        "><"=>"B",  //between
-        ">="=>"GE", //greater or equal
-        "<="=>"LE", //less or equal
-        "=%"=>"M", //Identical by like
-        "%="=>"M", //Identical by like
-        "!@"=>"NIN", //Identical by like
-    );
-*/
-    private static $singleChars = [
-        "="=>"I", //Identical
-        "%"=>"S", //substring
-        "?"=>"?", //logical
-        ">"=>"G", //greater
-        "<"=>"L", //less
-        "!"=>"N", // not field LIKE val
-        "@"=>"IN" // IN (new SqlExpression)
+    private static $filterPrefixes = [
+        1 => ["=", "%", "?", ">", "<", "!", "@"],
+        2 => ["!=", "!%", "><", ">=", "<=", "=%", "%=", "!@"],
+        3 => ["!><", "!=%", "!%="],
     ];
 
     protected $fieldsBase = [];
@@ -348,18 +327,47 @@ class BaseElement implements IElement
         return $result;
     }
 
-    private function getCleanFieldName($key)
+    /**
+     * Возвращает очищенное имя поля и префикс
+     *   или false если поле не найдено
+     * Используется для фильтра
+     * @param $fieldName
+     * @return array | false
+     */
+    public function getCleanFieldName($fieldName)
     {
-        $prefix = substr($key, 0, 1);
-        $result = ((in_array($prefix, array_keys(self::$singleChars)))
-            ? array("name" => substr($key, 1), "prefix" => $prefix)
-            : ((isset($this->fields[$key]))
-                ? array("name" => $key, "prefix" => "")
-                : false
-            )
-        );
+        $result = false;
+        // print_r([$this->fields, $fieldName]);
+
+        if ($result = $this->getFieldNameAndPrefix($fieldName, "")) {
+            return $result;
+        }
+
+        for ($prefixLength = 3; $prefixLength > 0; $prefixLength--) {
+            if ($result = $this->getCleanFieldNameWithPrefix($fieldName, $prefixLength)) {
+                break;
+            }
+        }
 
         return $result;
+    }
+
+    private function getCleanFieldNameWithPrefix($fieldName, $prefixLength)
+    {
+        $prefix = substr($fieldName, 0, $prefixLength);
+        $cleanFieldName = substr($fieldName, $prefixLength);
+        if (in_array($prefix, self::$filterPrefixes[$prefixLength])) {
+            return $this->getFieldNameAndPrefix($cleanFieldName, $prefix);
+        }
+        return false;
+    }
+
+    private function getFieldNameAndPrefix($fieldName, $prefix)
+    {
+        return (in_array($fieldName, $this->fields)
+            ? ["name" => $fieldName, "prefix" => $prefix]
+            : false
+        );
     }
 
     /**
