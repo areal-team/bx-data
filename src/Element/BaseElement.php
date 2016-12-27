@@ -55,6 +55,7 @@ class BaseElement implements IElement
     {
         $params["limit"] = 1;
         $result = $this->getList($params);
+        // print_r($result);
 
         return is_array($result)
             ? current($result)
@@ -67,9 +68,7 @@ class BaseElement implements IElement
      */
     public function add(array $params)
     {
-        $this->beforeAdd();
         $params = $this->compressFields($params);
-        $this->afterAdd();
     }
 
     /**
@@ -87,9 +86,7 @@ class BaseElement implements IElement
     */
     public function update($primaryKey, array $params)
     {
-        $this->beforeUpdate();
         $params = $this->compressFields($params);
-        $this->afterUpdate();
     }
 
     /**
@@ -109,10 +106,9 @@ class BaseElement implements IElement
 
         if ($item && $primaryKey = $item[$this->primaryKey]) {
             $this->update($primaryKey, $params);
-        } else {
-            $primaryKey = $this->add($params);
+            return $primaryKey;
         }
-        return $primaryKey;
+        return $this->add($params);
     }
 
     /**
@@ -189,34 +185,10 @@ class BaseElement implements IElement
             : $fieldValue;
     }
 
-    protected function beforeAdd()
+    protected function startNewOperation($operation)
     {
         $this->setErrorMessage('');
-    }
-
-    protected function beforeDelete()
-    {
-        $this->setErrorMessage('');
-    }
-
-    protected function beforeUpdate()
-    {
-        $this->setErrorMessage('');
-    }
-
-    protected function afterAdd()
-    {
-        $this->setLastOperation('add');
-    }
-
-    protected function afterDelete()
-    {
-        $this->setLastOperation('delete');
-    }
-
-    protected function afterUpdate()
-    {
-        $this->setLastOperation('update');
+        $this->setLastOperation($operation);
     }
 
     protected function isDeletable($primaryKey)
@@ -247,26 +219,33 @@ class BaseElement implements IElement
      */
     protected function updateParamsSelect()
     {
+        if (isset($this->params["runtime"])) {
+            $this->params["runtime"] = [];
+        }
+
         if (empty($this->params["select"])) {
             $this->params["select"] = array_keys($this->fields);
         }
-        // \Akop\Util::pre($this->fields, 'BaseElement updateParamsSelect fields');
+        // \Akop\Util::pre([$this->params["select"], $this->fields], 'BaseElement updateParamsSelect fields');
         if (!empty($this->fields)) {
             $result = [];
             foreach ($this->params["select"] as $value) {
-                if (isset($this->fields[$value])) {
-                    if (!is_array($this->fields[$value])) {
-                        $result[] = $this->fields[$value];
-                    } else {
-                        $result[$value] = $value . "_." . $this->fields[$value]["name"];
-                        $this->params["runtime"][$value . "_"] = $this->fields[$value];
-                    }
-                } else {
+                if (!isset($this->fields[$value])) {
                     $result[] = $value;
+                    continue;
                 }
+
+                if (!is_array($this->fields[$value])) {
+                    $result[] = $this->fields[$value];
+                    continue;
+                }
+
+                $result[$value] = $value . "_." . $this->fields[$value]["name"];
+                $this->params["runtime"][$value . "_"] = $this->fields[$value];
             }
             $this->params["select"] = $result;
         }
+        // \Akop\Util::pre([$this->params["select"], $this->params["runtime"]], 'BaseElement updateParamsSelect select');
     }
 
     /**

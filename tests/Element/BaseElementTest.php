@@ -7,36 +7,48 @@ class BaseElementTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        // initBitrixCore();
         $this->testingClass = new \Akop\Element\BaseElement;
     }
 
+    public function testGetRow()
+    {
+        $user1 = ['id' => 150, 'name' => 'Vasya', 'salary' => '2000'];
+        $user2 = ['id' => 200, 'name' => 'Petya', 'salary' => '1800'];
+        $data = [
+            150 => $user1,
+            200 => $user2,
+        ];
+
+        $stub = $this->getMock('\Akop\Element\BaseElement', ['getList']);
+        $stub->method('getList')
+             ->willReturn($data);
+
+        $this->assertEquals($user1, $stub->getRow());
+    }
+
+
     public function testFieldsEmptyArray()
     {
-        $fieldsSet = $this->testingClass->getFields();
-        $this->assertEquals($fieldsSet, array());
+        $this->assertEquals([], $this->testingClass->getFields());
     }
 
     public function testSetFields()
     {
-        $fields = array("name", "data");
+        $fields = ["name", "data"];
         $this->testingClass->setFields($fields);
-        $fieldsSet = $this->testingClass->getFields($fields);
-        $this->assertEquals($fieldsSet, $fields);
+        $this->assertEquals($fields, $this->testingClass->getFields($fields));
     }
 
     public function testCompressedFieldsEmptyArray()
     {
-        $compressedFieldsSet = $this->testingClass->getCompressedFields();
-        $this->assertEquals($compressedFieldsSet, array());
+        $this->assertEquals([], $this->testingClass->getCompressedFields());
     }
 
     public function testSetCompressedFields()
     {
         $compressedFields = array("name", "data");
         $this->testingClass->setCompressedFields($compressedFields);
-        $compressedFieldsSet = $this->testingClass->getCompressedFields($compressedFields);
-        $this->assertEquals($compressedFieldsSet, $compressedFields);
+        $this->assertEquals($compressedFields, $this->testingClass->getCompressedFields($compressedFields));
     }
 
     public function testSetCompressFields()
@@ -44,7 +56,7 @@ class BaseElementTest extends \PHPUnit_Framework_TestCase
         $fields = array("name", "data");
         $compressedFields = array("data");
         $data = str_repeat('1234567890', 100);
-        $compressedSample = "789c33343236313533b7b034301c658db24659c3940500fe4ccd15";
+        $compressedReference = "789c33343236313533b7b034301c658db24659c3940500fe4ccd15";
 
         $dataFields = array(
             "name" => "Vasya",
@@ -55,7 +67,7 @@ class BaseElementTest extends \PHPUnit_Framework_TestCase
         $compressedData = $this->testingClass->compressFields($dataFields);
 
         $this->assertEquals($dataFields["name"], $compressedData["name"]);
-        $this->assertEquals($compressedSample, $compressedData["data"]);
+        $this->assertEquals($compressedReference, $compressedData["data"]);
 
         $uncompressedData = $this->testingClass->uncompressFields($compressedData);
         $this->assertEquals($dataFields["name"], $uncompressedData["name"]);
@@ -104,5 +116,52 @@ class BaseElementTest extends \PHPUnit_Framework_TestCase
                 $this->testingClass->getCleanFieldName($filterPrefix . "fieldName")
             );
         }
+    }
+
+    public function testUpdateParamsSelect()
+    {
+        $brandField = [
+            'name' => 'UF_NAME',
+            'data_type' => '\Brand',
+            'reference' => ['=this.UF_BRAND' => 'ref.ID']
+        ];
+
+        $modelField = [
+            'name' => 'UF_NAME',
+            'data_type' => '\Model',
+            'reference' => ['=this.UF_MODEL' => 'ref.ID']
+        ];
+        $fields = [
+            'id' => 'ID',
+            'body' => 'UF_NAME',
+            'brandName' => $brandField,
+            'brandId' => 'UF_BRAND',
+            'modelName' => $modelField,
+            'modelId' => 'UF_MODEL'
+        ];
+        $paramsReference = [
+            'select' => [
+                'ID',
+                'UF_NAME',
+                'brandName' => 'brandName_.UF_NAME',
+                'UF_BRAND',
+                'modelName' => 'modelName_.UF_NAME',
+                'UF_MODEL',
+            ],
+            'runtime' => [
+                'brandName_' => $brandField,
+                'modelName_' => $modelField,
+            ],
+        ];
+
+        $method = new \ReflectionMethod('\Akop\Element\BaseElement', 'updateParamsSelect');
+        $method->setAccessible(true);
+        $property = new \ReflectionProperty('\Akop\Element\BaseElement', 'params');
+        $property->setAccessible(true);
+
+        $element = new \Akop\Element\BaseElement;
+        $element->setFields($fields);
+        $method->invoke($element);
+        $this->assertEquals($property->getValue($element), $paramsReference);
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace Akop\Element;
 
 \CModule::includeModule('highloadblock');
@@ -7,6 +8,8 @@ use \Bitrix\Highloadblock as HL;
 use \Akop\Element as Element;
 
 /**
+ * Класс для работы с данными из highload блоков
+ * Предпочтительно наследовать класс с указанием $entityName
  * @author Андрей Копылов aakopylov@mail.ru
  */
 class HlElement extends BaseElement
@@ -25,45 +28,39 @@ class HlElement extends BaseElement
     private $hlblockName = false;
     private $entityDC;
 
-    public function __construct(array $params = array())
+    /**
+     * @param $params array entityName или blockName
+     */
+    public function __construct(array $params = [])
     {
         if (!empty($params)) {
-            // В зависимости от переданных параметров формируем фильтр и сообщение об ошибке
-            if (isset($params["hlblockId"])) {
-                $this->hlblockId = $params["hlblockId"];
-                $filter = array("ID" => $this->hlblockId);
-                $errMesssage = "ID=" . $this->hlblockId;
-            } else {
-                if (isset($params["blockName"])) {
-                    $this->entityName = substr($params["blockName"], strlen($this->prefix));
-                } elseif (isset($params["entityName"])) {
-                    $this->entityName = $params["entityName"];
-                }
-            }
+            $this->entityName = (isset($params["blockName"])
+                ? substr($params["blockName"], strlen($this->prefix))
+                : $params["entityName"]
+            );
         }
-
-        $filter = array("NAME" => $this->prefix . $this->entityName);
-        $errMesssage = "NAME=" . $this->prefix . $this->entityName;
-
-        $objBlock = HL\HighloadBlockTable::getList(array(
-            "filter" => $filter
-        ));
-        $blockEl = $objBlock->Fetch();
-        try {
-            $this->hlblockId = $blockEl["ID"];
-            $this->hlblockName = $blockEl["NAME"];
-        } catch (Exception $e) {
-            throw new Exception("Не найден Highload block  {$errMesssage}", 404);
-        }
-        $entity = HL\HighloadBlockTable::compileEntity($blockEl);
-        $edc = (string) $entity->getDataClass();
-        $this->entityDC = new $edc;
-        // $this->id = $id;
-
+        $this->createEntityDataClass();
         parent::__construct();
         return $this;
     }
 
+
+    private function createEntityDataClass()
+    {
+        $objBlock = HL\HighloadBlockTable::getList([
+            "filter" => ["NAME" => $this->prefix . $this->entityName]
+        ]);
+        $blockEl = $objBlock->Fetch();
+        if (empty($blockEl)) {
+            throw new \Exception("Не найден Highload block NAME= " .$this->prefix . $this->entityName, 404);
+        }
+
+        $this->hlblockId = $blockEl["ID"];
+        $this->hlblockName = $blockEl["NAME"];
+        $entity = HL\HighloadBlockTable::compileEntity($blockEl);
+        $edc = (string) $entity->getDataClass();
+        $this->entityDC = new $edc;
+    }
 
     public function getList(array $params = array())
     {
@@ -83,49 +80,40 @@ class HlElement extends BaseElement
 
     public function getRowByName($name)
     {
-        return $this->getRow(array(
-                    "filter" => array(
-                        "name" => $name
-                    )
-                ));
+        return $this->getRow(["filter" => ["name" => $name]]);
     }
 
     public function add(array $params)
     {
-        $this->beforeAdd();
+        $this->startNewOperation('add');
         $params = $this->compressFields($params);
         $params = $this->getUpdatedParamsFromArray($params);
         $result = $this->entityDC->add($params);
         $primaryKey = $result->getId();
-        $this->afterAdd();
         return $primaryKey;
     }
 
     public function delete($primaryKey)
     {
-        $this->beforeDelete();
+        $this->startNewOperation('delete');
         if (!$this->isDeletable($primaryKey)) {
-            $result = false;
-            $this->setLastOperation('delete_error');
             $this->setErrorMessage("Удаление невозможно. Существуют зависимые объекты.");
-        } else {
-            if ($this->softDelete) {
-                $result = $this->update($primaryKey, array('UF_DELETED' => 1));
-                $this->setLastOperation('soft_delete');
-            } else {
-                $res = $this->entityDC->delete($primaryKey);
-                parent::afterDelete();
-                $result = $res->isSuccess();
-            }
+            return false;
         }
-        return $result;
+
+        if ($this->softDelete) {
+            return $this->update($primaryKey, ['UF_DELETED' => 1]);
+        }
+
+        $res = $this->entityDC->delete($primaryKey);
+        return $res->isSuccess();
     }
 
     public function undelete($primaryKey)
     {
         $result = false;
         if ($this->softDelete) {
-            $result = $this->update($primaryKey, array('UF_DELETED' => 0));
+            $result = $this->update($primaryKey, ['UF_DELETED' => 0]);
             $this->setLastOperation('undelete');
         }
         return $result;
@@ -133,11 +121,10 @@ class HlElement extends BaseElement
 
     public function update($primaryKey, array $params)
     {
-        $this->beforeUpdate();
+        $this->startNewOperation('delete');
         $params = $this->compressFields($params);
         $params = $this->getUpdatedParamsFromArray($params);
         $this->entityDC->update($primaryKey, $params);
-        $this->afterUpdate();
         return $primaryKey;
     }
 
@@ -146,6 +133,7 @@ class HlElement extends BaseElement
         return $this->hlblockId;
     }
 
+    /*
     private function getObjectName()
     {
         return "HLBLOCK_" . $this->hlblockId;
@@ -156,7 +144,6 @@ class HlElement extends BaseElement
         global $USER_FIELD_MANAGER;
         return $USER_FIELD_MANAGER->GetUserFields($this->getObjectName());
     }
-/*
     private function getFieldId($fieldName)
     {
         $fields = $this->getFields();
@@ -179,7 +166,6 @@ class HlElement extends BaseElement
     public function getMap()
     {
         $result = $this->fieldsBase;
-
         $list = $this->getListBlocks();
         foreach ($list as $value) {
             $listBlocks[$value["ID"]] = $value["NAME"];
@@ -188,8 +174,8 @@ class HlElement extends BaseElement
         $blockId = array_search($this->hlblockName, $listBlocks);
 
         $obj = \CUserTypeEntity::GetList(
-            array("ENTITY_ID" => "ASC"),
-            array("ENTITY_ID" => "HLBLOCK_" . $blockId)
+            ["ENTITY_ID" => "ASC"],
+            ["ENTITY_ID" => "HLBLOCK_" . $blockId]
         );
         while ($item = $obj->Fetch()) {
             $alias = \Akop\Util::camelize(substr($item["FIELD_NAME"], 3));
@@ -270,7 +256,7 @@ class HlElement extends BaseElement
      * Возвращает все HL блоки
      * @return array
      */
-    private function getListBlocks(array $params = array())
+    private function getListBlocks()
     {
         $result = false;
         $objBlock = HL\HighloadBlockTable::getList();
