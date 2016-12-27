@@ -27,9 +27,9 @@ class BaseElementTest extends \PHPUnit_Framework_TestCase
     }
 
 
-    public function testFieldsEmptyArray()
+    public function testFieldsNotAnEmptyArray()
     {
-        $this->assertEquals([], $this->testingClass->getFields());
+        $this->assertEquals(["ID"], $this->testingClass->getFields());
     }
 
     public function testSetFields()
@@ -118,7 +118,17 @@ class BaseElementTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public function testUpdateParamsSelect()
+    public function testUpdateParamsSelectSimple()
+    {
+        $property = new \ReflectionProperty('\Akop\Element\BaseElement', 'params');
+        $property->setAccessible(true);
+
+        $this->testingClass->getList(['select' => ['NAME']]);
+        $params = $property->getValue($this->testingClass);
+        $this->assertEquals(['NAME', 'ID'], $params['select']);
+    }
+
+    public function testUpdateParamsSelectComplex()
     {
         $brandField = [
             'name' => 'UF_NAME',
@@ -162,6 +172,7 @@ class BaseElementTest extends \PHPUnit_Framework_TestCase
         $element = new \Akop\Element\BaseElement;
         $element->setFields($fields);
         $method->invoke($element);
-        $this->assertEquals($property->getValue($element), $paramsReference);
+        // print_r($property->getValue($element));
+        $this->assertEquals($paramsReference, $property->getValue($element));
     }
 }

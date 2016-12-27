@@ -14,7 +14,7 @@ class BaseElement implements IElement
     ];
 
     protected $fieldsBase = [];
-    protected $fields = [];
+    protected $fields = ["ID"];
     protected $reversedFields = [];
     protected $compressedFields = [];
     protected $rename = [];
@@ -37,13 +37,13 @@ class BaseElement implements IElement
      */
     public function getList(array $params = [])
     {
+        $this->startNewOperation('getList');
         // если передан параметр group, то данные select игнорируем
         if (isset($params["group"])) {
             $params["select"] = $params["group"];
         }
         $this->params = $params;
         $this->updateParams();
-        $this->setLastOperation('');
     }
 
     /**
@@ -226,6 +226,7 @@ class BaseElement implements IElement
         if (empty($this->params["select"])) {
             $this->params["select"] = array_keys($this->fields);
         }
+
         // \Akop\Util::pre([$this->params["select"], $this->fields], 'BaseElement updateParamsSelect fields');
         if (!empty($this->fields)) {
             $result = [];
@@ -245,6 +246,14 @@ class BaseElement implements IElement
             }
             $this->params["select"] = $result;
         }
+
+        if (!empty($this->params["select"])
+            && !in_array($this->primaryKey, $this->params["select"])
+        ) {
+            $this->params["select"][] = $this->primaryKey;
+        }
+
+
         // \Akop\Util::pre([$this->params["select"], $this->params["runtime"]], 'BaseElement updateParamsSelect select');
     }
 

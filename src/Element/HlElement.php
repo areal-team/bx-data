@@ -2,8 +2,6 @@
 
 namespace Akop\Element;
 
-\CModule::includeModule('highloadblock');
-
 use \Bitrix\Highloadblock as HL;
 use \Akop\Element as Element;
 
@@ -15,9 +13,10 @@ use \Akop\Element as Element;
 class HlElement extends BaseElement
 {
     protected $prefix = "";
-    protected $primaryKey = "id";
+    protected $primaryKey = "ID";
     protected $entityName = "";
     protected $softDelete = false;
+    protected $fields = ["ID"];
     protected $fieldsBase = [
         "id" => "ID",
     ];
@@ -39,6 +38,7 @@ class HlElement extends BaseElement
                 : $params["entityName"]
             );
         }
+        \CModule::includeModule('highloadblock');
         $this->createEntityDataClass();
         parent::__construct();
         return $this;
@@ -133,36 +133,6 @@ class HlElement extends BaseElement
         return $this->hlblockId;
     }
 
-    /*
-    private function getObjectName()
-    {
-        return "HLBLOCK_" . $this->hlblockId;
-    }
-
-    public function getFields()
-    {
-        global $USER_FIELD_MANAGER;
-        return $USER_FIELD_MANAGER->GetUserFields($this->getObjectName());
-    }
-    private function getFieldId($fieldName)
-    {
-        $fields = $this->getFields();
-        return $fields[$fieldName]["ID"];
-    }
-    private function getEnumValues($fieldId)
-    {
-        $obj = new CUserFieldEnum();
-        $list = $obj->GetList(
-            array(),
-            array("USER_FIELD_ID" => $fieldId)
-        );
-        while ($el = $list->Fetch()) {
-            $result[$el["ID"]] = $el;
-        }
-        return $result;
-    }
-    */
-
     public function getMap()
     {
         $result = $this->fieldsBase;
@@ -206,9 +176,10 @@ class HlElement extends BaseElement
 
     /**
      * Выясняем возможно ли удаление данного элемента
-     * Для этого ищем ссылки в HL блоках на эту сущность.
-     * Далее в этих блоках ищем записи со ссылкой на удаляемый элемент.
-     * Если такие записи найдены, то запись не должна быть удалена
+     *
+     * Если есть записи в HL блоках со ссылкой на удаляемый элемент,
+     * то запись не должна быть удалена
+     *
      * @param  int  $primaryKey
      * @return boolean
      * @todo Добавить обработку инфоблоков
@@ -265,4 +236,34 @@ class HlElement extends BaseElement
         }
         return $result;
     }
+
+        /*
+        private function getObjectName()
+        {
+            return "HLBLOCK_" . $this->hlblockId;
+        }
+
+        public function getFields()
+        {
+            global $USER_FIELD_MANAGER;
+            return $USER_FIELD_MANAGER->GetUserFields($this->getObjectName());
+        }
+        private function getFieldId($fieldName)
+        {
+            $fields = $this->getFields();
+            return $fields[$fieldName]["ID"];
+        }
+        private function getEnumValues($fieldId)
+        {
+            $obj = new CUserFieldEnum();
+            $list = $obj->GetList(
+                array(),
+                array("USER_FIELD_ID" => $fieldId)
+            );
+            while ($el = $list->Fetch()) {
+                $result[$el["ID"]] = $el;
+            }
+            return $result;
+        }
+        */
 }
