@@ -118,9 +118,9 @@ class BaseElement implements IElement
     /**
      * Возвращает количество элементов в таблице
      */
-    public function count()
+    public function count(array $filter = [])
     {
-        return count($this->getList(['select' => $this->primaryKey]));
+        return count($this->getList(['select' => $this->primaryKey, 'filter' => $filter]));
     }
 
     public function getLastOperation()
