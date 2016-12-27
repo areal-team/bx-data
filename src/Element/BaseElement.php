@@ -250,7 +250,7 @@ class BaseElement implements IElement
         if (empty($this->params["select"])) {
             $this->params["select"] = array_keys($this->fields);
         }
-
+        // \Akop\Util::pre($this->fields, 'BaseElement updateParamsSelect fields');
         if (!empty($this->fields)) {
             $result = [];
             foreach ($this->params["select"] as $value) {
@@ -364,10 +364,15 @@ class BaseElement implements IElement
 
     private function getFieldNameAndPrefix($fieldName, $prefix)
     {
-        return (in_array($fieldName, $this->fields)
+        return ($this->isFieldExists($fieldName)
             ? ["name" => $fieldName, "prefix" => $prefix]
             : false
         );
+    }
+
+    private function isFieldExists($fieldName)
+    {
+        return isset($this->fields[$fieldName]);
     }
 
     /**

@@ -64,7 +64,7 @@ class BaseElementTest extends \PHPUnit_Framework_TestCase
 
     public function testGetCleanFieldNameWithoutPrefix()
     {
-        $this->testingClass->setFields(["fieldName"]);
+        $this->testingClass->setFields(["fieldName" => "UF_FIELD_NAME"]);
         $this->assertEquals(
             ["name" => "fieldName", "prefix" => ""],
             $this->testingClass->getCleanFieldName("fieldName")
@@ -73,7 +73,7 @@ class BaseElementTest extends \PHPUnit_Framework_TestCase
 
     public function testGetCleanFieldNameWrongFieldName()
     {
-        $this->testingClass->setFields(["fieldName"]);
+        $this->testingClass->setFields(["fieldName" => "UF_FIELD_NAME"]);
         $this->assertEquals(
             false,
             $this->testingClass->getCleanFieldName("wrongFieldName")
@@ -82,7 +82,7 @@ class BaseElementTest extends \PHPUnit_Framework_TestCase
 
     public function testGetCleanFieldNameWrongFieldNameWithPrefix()
     {
-        $this->testingClass->setFields(["fieldName"]);
+        $this->testingClass->setFields(["fieldName" => "UF_FIELD_NAME"]);
         $this->assertEquals(
             false,
             $this->testingClass->getCleanFieldName("!=wrongFieldName")
@@ -91,7 +91,7 @@ class BaseElementTest extends \PHPUnit_Framework_TestCase
 
     public function testGetCleanFieldName()
     {
-        $this->testingClass->setFields(["fieldName"]);
+        $this->testingClass->setFields(["fieldName" => "UF_FIELD_NAME"]);
 
         $filterPrefixes = ["=", "%", "?", ">", "<", "!", "@",
             "!=", "!%", "><", ">=", "<=", "=%", "%=", "!@",

@@ -68,7 +68,7 @@ class HlElement extends BaseElement
     public function getList(array $params = array())
     {
         parent::getList($params);
-
+        // \Akop\Util::pre($this->params, 'HlElement getList $this->params');
         $res = $this->entityDC->getList($this->params);
         while ($item = $res->Fetch()) {
             $key = (isset($item["ID"]))
