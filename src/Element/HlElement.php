@@ -2,9 +2,6 @@
 
 namespace Akop\Element;
 
-use \Bitrix\Highloadblock as HL;
-use \Akop\Element as Element;
-
 /**
  * Класс для работы с данными из highload блоков
  * Предпочтительно наследовать класс с указанием $entityName
@@ -13,18 +10,15 @@ use \Akop\Element as Element;
 class HlElement extends BaseElement
 {
     protected $prefix = "";
-    protected $primaryKey = "ID";
     protected $entityName = "";
     protected $softDelete = false;
-    protected $fields = ["ID"];
     protected $fieldsBase = [
         "id" => "ID",
     ];
 
     // private $id = false;
-    // private $item = false;
+    private $hlblocks = [];
     private $hlblockId = false;
-    private $hlblockName = false;
     private $entityDC;
 
     /**
@@ -38,29 +32,15 @@ class HlElement extends BaseElement
                 : $params["entityName"]
             );
         }
-        \CModule::includeModule('highloadblock');
-        $this->createEntityDataClass();
+        $this->hlblockObj = new HlBlock;
+        $this->getHlBlocks();
+        $this->hlblockId = $this->getHlBlockIdByName($this->prefix . $this->entityName);
+        // \Akop\Util::pre($this, 'HlElement __construct');
+        $this->entityDC = $this->hlblockObj->getEntityDataClass(['ID' => $this->hlblockId]);
         parent::__construct();
         return $this;
     }
 
-
-    private function createEntityDataClass()
-    {
-        $objBlock = HL\HighloadBlockTable::getList([
-            "filter" => ["NAME" => $this->prefix . $this->entityName]
-        ]);
-        $blockEl = $objBlock->Fetch();
-        if (empty($blockEl)) {
-            throw new \Exception("Не найден Highload block NAME= " .$this->prefix . $this->entityName, 404);
-        }
-
-        $this->hlblockId = $blockEl["ID"];
-        $this->hlblockName = $blockEl["NAME"];
-        $entity = HL\HighloadBlockTable::compileEntity($blockEl);
-        $edc = (string) $entity->getDataClass();
-        $this->entityDC = new $edc;
-    }
 
     public function getList(array $params = array())
     {
@@ -136,38 +116,29 @@ class HlElement extends BaseElement
     public function getMap()
     {
         $result = $this->fieldsBase;
-        $list = $this->getListBlocks();
-        foreach ($list as $value) {
-            $listBlocks[$value["ID"]] = $value["NAME"];
-        }
-
-        $blockId = array_search($this->hlblockName, $listBlocks);
-
-        $obj = \CUserTypeEntity::GetList(
-            ["ENTITY_ID" => "ASC"],
-            ["ENTITY_ID" => "HLBLOCK_" . $blockId]
-        );
-        while ($item = $obj->Fetch()) {
-            $alias = \Akop\Util::camelize(substr($item["FIELD_NAME"], 3));
-            switch ($item["USER_TYPE_ID"]) {
+        $userFieldsObj = new UserField;
+        $userFields = $userFieldsObj->getList([
+            'order' => ["ENTITY_ID" => "ASC"],
+            'filter' => ["ENTITY_ID" => "HLBLOCK_" . $this->hlblockId]
+        ]);
+        foreach ($userFields as $field) {
+            $alias = \Akop\Util::camelize(substr($field["FIELD_NAME"], 3));
+            switch ($field["USER_TYPE_ID"]) {
                 case "hlblock":
                     // список возможных значений
                     $result[$alias . "Name"] = array(
                         "name" => "UF_NAME",
-                        "data_type" => "\\" . $listBlocks[$item["SETTINGS"]["HLBLOCK_ID"]],
+                        "data_type" => "\\" . $this->hlblocks[$field["SETTINGS"]["HLBLOCK_ID"]],
                         "reference" => array(
-                            "=this." . $item["FIELD_NAME"] => "ref.ID"
+                            "=this." . $field["FIELD_NAME"] => "ref.ID"
                         ),
                     );
                     $alias .= "Id";
-                    $field = $item["FIELD_NAME"];
                     break;
                 default:
-                    // список возможных значений
-                    $field = $item["FIELD_NAME"];
                     break;
             }
-            $result[$alias] = $field;
+            $result[$alias] = $field["FIELD_NAME"];
         }
 
         return $result;
@@ -186,7 +157,7 @@ class HlElement extends BaseElement
      */
     protected function isDeletable($primaryKey)
     {
-        $obj = new Element\UserField;
+        $obj = new UserField;
         $fields = $obj->getList(array(
             "filter" => array(
                 "USER_TYPE_ID" => "hlblock",
@@ -198,7 +169,7 @@ class HlElement extends BaseElement
 
         $result = true;
         foreach ($fields as $field) {
-            $obj = new Element\HlElement(array(
+            $obj = new HlElement(array(
                 "hlblockId" => substr($field["ENTITY_ID"], 8) // убираем "HLBLOCK_"
             ));
             $list = $obj->getList(array(
@@ -223,47 +194,17 @@ class HlElement extends BaseElement
         }
     }
 
-    /**
-     * Возвращает все HL блоки
-     * @return array
-     */
-    private function getListBlocks()
+    private function getHlBlocks()
     {
-        $result = false;
-        $objBlock = HL\HighloadBlockTable::getList();
-        while ($blockEl = $objBlock->Fetch()) {
-            $result[$blockEl["ID"]] = $blockEl;
+        $list = $this->hlblockObj->getList(['select' => ['NAME']]);
+        foreach ($list as $value) {
+            $this->hlblocks[$value["ID"]] = $value["NAME"];
         }
-        return $result;
+        return $this->hlblocks;
     }
 
-        /*
-        private function getObjectName()
-        {
-            return "HLBLOCK_" . $this->hlblockId;
-        }
-
-        public function getFields()
-        {
-            global $USER_FIELD_MANAGER;
-            return $USER_FIELD_MANAGER->GetUserFields($this->getObjectName());
-        }
-        private function getFieldId($fieldName)
-        {
-            $fields = $this->getFields();
-            return $fields[$fieldName]["ID"];
-        }
-        private function getEnumValues($fieldId)
-        {
-            $obj = new CUserFieldEnum();
-            $list = $obj->GetList(
-                array(),
-                array("USER_FIELD_ID" => $fieldId)
-            );
-            while ($el = $list->Fetch()) {
-                $result[$el["ID"]] = $el;
-            }
-            return $result;
-        }
-        */
+    private function getHlBlockIdByName($hlblockName)
+    {
+        return array_search($hlblockName, $this->hlblocks);
+    }
 }
