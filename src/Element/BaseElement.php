@@ -249,6 +249,7 @@ class BaseElement implements IElement
 
         if (!empty($this->params["select"])
             && !in_array($this->primaryKey, $this->params["select"])
+            && empty($this->params["group"])
         ) {
             $this->params["select"][] = $this->primaryKey;
         }
