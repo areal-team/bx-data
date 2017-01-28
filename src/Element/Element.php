@@ -192,17 +192,15 @@ class Element extends IbElementOrSection
     }
 
 
-    public function updateProperties($id, array $params = array())
+    public function updateProperties($id, array $params = [])
     {
         if ($id > 0) {
             \CIBlockElement::SetPropertyValuesEx($id, false, $params);
         }
     }
 
-    public function update($id, array $params = array())
+    protected function updateImplement($primaryKey, array $params)
     {
-        $this->beforeUpdate();
-        $params = $this->getUpdatedParamsFromArray($params);
         foreach ($params as $fieldName => $value) {
             $code = $this->getPropertyCodeByProperty($fieldName);
             if ($code) {
@@ -212,12 +210,12 @@ class Element extends IbElementOrSection
             }
         }
         $obj = new \CIBlockElement;
-        $id = $obj->Update($id, $finalParams);
-        if (!$id) {
+        $primaryKey = $obj->Update($primaryKey, $finalParams);
+        if (!$primaryKey) {
             throw new \Exception($obj->LAST_ERROR . PHP_EOL . print_r($finalParams, true), 400);
         }
         $this->afterAdd();
-        return $id;
+        return $primaryKey;
     }
 
 

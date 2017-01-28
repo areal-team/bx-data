@@ -99,11 +99,8 @@ class HlElement extends BaseElement
         return $result;
     }
 
-    public function update($primaryKey, array $params)
+    protected function updateImplement($primaryKey, array $params)
     {
-        $this->startNewOperation('delete');
-        $params = $this->compressFields($params);
-        $params = $this->getUpdatedParamsFromArray($params);
         $this->entityDC->update($primaryKey, $params);
         return $primaryKey;
     }

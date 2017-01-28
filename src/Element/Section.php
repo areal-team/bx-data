@@ -87,8 +87,4 @@ class Section extends IbElementOrSection
         }
         return $id;
     }
-
-    public function update()
-    {
-    }
 }
