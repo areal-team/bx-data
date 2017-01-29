@@ -94,8 +94,9 @@ class HlElement extends AbstractElement
         return $result;
     }
 
-    protected function updateImplement($primaryKey, array $params)
+    public function update($primaryKey, array $params)
     {
+        parent::update($primaryKey, $params);
         $this->entityDC->update($primaryKey, $params);
         return $primaryKey;
     }

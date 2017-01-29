@@ -94,7 +94,7 @@ class AbstractElement implements ElementInterface
     * @param $primaryKey integer
     * @param $params array набор полей для записи в БД
     */
-    final public function update($primaryKey, array $params)
+    public function update($primaryKey, array $params)
     {
         $this->startNewOperation('update');
         $params = $this->compressFields($params);
