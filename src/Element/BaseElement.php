@@ -21,6 +21,11 @@ class BaseElement extends AbstractElement
         return $primaryKey;
     }
 
+    protected function addImplement(array $params)
+    {
+        return true;
+    }
+
     protected function isDeletable($primaryKey)
     {
         return true;

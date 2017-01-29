@@ -63,14 +63,10 @@ class HlElement extends BaseElement
         return $this->getRow(["filter" => ["name" => $name]]);
     }
 
-    public function add(array $params)
+    protected function addImplement(array $params)
     {
-        $this->startNewOperation('add');
-        $params = $this->compressFields($params);
-        $params = $this->getUpdatedParamsFromArray($params);
         $result = $this->entityDC->add($params);
-        $primaryKey = $result->getId();
-        return $primaryKey;
+        return $result->getId();
     }
 
     public function delete($primaryKey)

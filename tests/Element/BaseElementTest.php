@@ -51,8 +51,16 @@ class BaseElementTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($compressedFields, $this->testingClass->getCompressedFields($compressedFields));
     }
 
+    /**
+     * Тестирует компрессию и декомпрессию полей
+     */
     public function testSetCompressFields()
     {
+        $methodCompressFields = new \ReflectionMethod('\Akop\Element\BaseElement', 'compressFields');
+        $methodCompressFields->setAccessible(true);
+        $methodUncompressField = new \ReflectionMethod('\Akop\Element\BaseElement', 'uncompressField');
+        $methodUncompressField->setAccessible(true);
+
         $fields = array("name", "data");
         $compressedFields = array("data");
         $data = str_repeat('1234567890', 100);
@@ -64,14 +72,20 @@ class BaseElementTest extends \PHPUnit_Framework_TestCase
         );
         $this->testingClass->setFields($fields);
         $this->testingClass->setCompressedFields($compressedFields);
-        $compressedData = $this->testingClass->compressFields($dataFields);
+        // $compressedData = $this->testingClass->compressFields();
+        $compressedData = $methodCompressFields->invoke($this->testingClass, $dataFields);
 
         $this->assertEquals($dataFields["name"], $compressedData["name"]);
         $this->assertEquals($compressedReference, $compressedData["data"]);
 
-        $uncompressedData = $this->testingClass->uncompressFields($compressedData);
-        $this->assertEquals($dataFields["name"], $uncompressedData["name"]);
-        $this->assertEquals($dataFields["data"], $uncompressedData["data"]);
+        $this->assertEquals(
+            $dataFields["name"],
+            $methodUncompressField->invoke($this->testingClass, "name", $compressedData["name"])
+        );
+        $this->assertEquals(
+            $dataFields["data"],
+            $methodUncompressField->invoke($this->testingClass, "data", $compressedData["data"])
+        );
     }
 
     public function testGetCleanFieldNameWithoutPrefix()
