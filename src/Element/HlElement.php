@@ -7,7 +7,7 @@ namespace Akop\Element;
  * Предпочтительно наследовать класс с указанием $entityName
  * @author Андрей Копылов aakopylov@mail.ru
  */
-class HlElement extends BaseElement
+class HlElement extends AbstractElement
 {
     protected $prefix = "";
     protected $entityName = "";
@@ -63,17 +63,16 @@ class HlElement extends BaseElement
         return $this->getRow(["filter" => ["name" => $name]]);
     }
 
-    protected function addImplement(array $params)
+    public function add(array $params)
     {
+        parent::add($params);
         $result = $this->entityDC->add($params);
         return $result->getId();
     }
 
     public function delete($primaryKey)
     {
-        $this->startNewOperation('delete');
-        if (!$this->isDeletable($primaryKey)) {
-            $this->setErrorMessage("Удаление невозможно. Существуют зависимые объекты.");
+        if (!parent::delete($primaryKey)) {
             return false;
         }
 

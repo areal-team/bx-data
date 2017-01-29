@@ -10,7 +10,7 @@ use \Akop\Element as Element;
  * Предпочтительно наследовать класс с указанием $entityName
  * @author Андрей Копылов aakopylov@mail.ru
  */
-class HlBlock extends BaseElement
+class HlBlock extends AbstractElement
 {
     // protected $primaryKey = "ID";
     protected $fields = ["ID", "NAME", "TABLE_NAME"];

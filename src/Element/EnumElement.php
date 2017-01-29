@@ -3,7 +3,7 @@ namespace Akop\Element;
 
 \CModule::IncludeModule("iblock");
 
-class EnumElement extends BaseElement
+class EnumElement extends AbstractElement
 {
 
     public function __construct($params)
@@ -14,6 +14,7 @@ class EnumElement extends BaseElement
 
     public function getList(array $params = array())
     {
+        parent::getList($params);
         $params = array_merge(
             array(
                 "order" => false,

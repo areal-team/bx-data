@@ -3,7 +3,7 @@ namespace Akop\Element;
 
 \CModule::IncludeModule("iblock");
 
-class IbElementOrSection extends BaseElement
+class IbElementOrSection extends AbstractElement
 {
     protected $iblockCode = false;
     protected $iblockId = false;

@@ -3,11 +3,12 @@ namespace Akop\Element;
 
 use Bitrix\Main\Entity;
 
-class UserField extends BaseElement
+class UserField extends AbstractElement
 {
 
     public function getList(array $params = [])
     {
+        parent::getList($params);
         $result = [];
         if (!is_array($params["filter"])) {
             $params["filter"] = [];

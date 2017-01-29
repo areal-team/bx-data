@@ -77,6 +77,7 @@ class Section extends IbElementOrSection
 
     public function add($params)
     {
+        parent::add($params);
         $bs = new \CIBlockSection;
         if (empty($params["IBLOCK_ID"])) {
             $params["IBLOCK_ID"] = $this->iblockId;

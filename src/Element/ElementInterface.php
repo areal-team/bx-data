@@ -7,7 +7,7 @@ namespace Akop\Element;
  * @author: Андрей Копылов
  * @mail: aakopylov@mail.ru,
  */
-interface IElement
+interface ElementInterface
 {
     public function getList(array $params = array());
     public function getRow(array $params = array());

@@ -1,13 +1,13 @@
 <?php
 namespace AkopTests;
 
-class BaseElementTest extends \PHPUnit_Framework_TestCase
+class AbstractElementTest extends \PHPUnit_Framework_TestCase
 {
     protected $testingClass;
 
     public function setUp()
     {
-        $this->testingClass = new \Akop\Element\BaseElement;
+        $this->testingClass = new \Akop\Element\AbstractElement;
     }
 
     public function testGetRow()
@@ -19,7 +19,7 @@ class BaseElementTest extends \PHPUnit_Framework_TestCase
             200 => $user2,
         ];
 
-        $stub = $this->getMock('\Akop\Element\BaseElement', ['getList']);
+        $stub = $this->getMock('\Akop\Element\AbstractElement', ['getList']);
         $stub->method('getList')
              ->willReturn($data);
 
@@ -56,9 +56,9 @@ class BaseElementTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetCompressFields()
     {
-        $methodCompressFields = new \ReflectionMethod('\Akop\Element\BaseElement', 'compressFields');
+        $methodCompressFields = new \ReflectionMethod('\Akop\Element\AbstractElement', 'compressFields');
         $methodCompressFields->setAccessible(true);
-        $methodUncompressField = new \ReflectionMethod('\Akop\Element\BaseElement', 'uncompressField');
+        $methodUncompressField = new \ReflectionMethod('\Akop\Element\AbstractElement', 'uncompressField');
         $methodUncompressField->setAccessible(true);
 
         $fields = array("name", "data");
@@ -134,7 +134,7 @@ class BaseElementTest extends \PHPUnit_Framework_TestCase
 
     public function testUpdateParamsSelectSimple()
     {
-        $property = new \ReflectionProperty('\Akop\Element\BaseElement', 'params');
+        $property = new \ReflectionProperty('\Akop\Element\AbstractElement', 'params');
         $property->setAccessible(true);
 
         $this->testingClass->getList(['select' => ['NAME']]);
@@ -178,12 +178,12 @@ class BaseElementTest extends \PHPUnit_Framework_TestCase
             ],
         ];
 
-        $method = new \ReflectionMethod('\Akop\Element\BaseElement', 'updateParamsSelect');
+        $method = new \ReflectionMethod('\Akop\Element\AbstractElement', 'updateParamsSelect');
         $method->setAccessible(true);
-        $property = new \ReflectionProperty('\Akop\Element\BaseElement', 'params');
+        $property = new \ReflectionProperty('\Akop\Element\AbstractElement', 'params');
         $property->setAccessible(true);
 
-        $element = new \Akop\Element\BaseElement;
+        $element = new \Akop\Element\AbstractElement;
         $element->setFields($fields);
         $method->invoke($element);
         // print_r($property->getValue($element));

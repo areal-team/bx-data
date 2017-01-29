@@ -5,7 +5,7 @@ namespace Akop\Element;
  * Базовый класс для элементов
  * В нем реализован основной функционал для работы с данными
  */
-abstract class AbstractElement implements IElement
+class AbstractElement implements ElementInterface
 {
     use ParamTrait;
 
@@ -39,10 +39,11 @@ abstract class AbstractElement implements IElement
         }
         $this->params = $params;
         $this->updateParams();
+        return [];
     }
 
     /**
-     * Возвращает одну строку
+     * Возвращает одну строку из набора данных
      * @param $params array допустимы параметры: select, filter, limit, order
      * @return array
      */
@@ -66,14 +67,27 @@ abstract class AbstractElement implements IElement
         $this->startNewOperation('add');
         $params = $this->compressFields($params);
         $params = $this->getUpdatedParamsFromArray($params);
-        return $this->addImplement($params);
+        return false;
     }
 
     /**
-    * Удаляет элемент
+    * Удаление элемента должно быть реализовано в наследниках
     * @param $primaryKey
     */
-    abstract public function delete($primaryKey);
+    public function delete($primaryKey)
+    {
+        $this->startNewOperation('delete');
+        if (!$this->isDeletable($primaryKey)) {
+            $this->setErrorMessage("Удаление невозможно. Существуют зависимые объекты.");
+            return false;
+        }
+        return true;
+    }
+
+    protected function isDeletable($primaryKey)
+    {
+        return true;
+    }
 
     /**
     * Обновляет элемент
@@ -85,11 +99,18 @@ abstract class AbstractElement implements IElement
         $this->startNewOperation('update');
         $params = $this->compressFields($params);
         $params = $this->getUpdatedParamsFromArray($params);
-        return $this->updateImplement($primaryKey, $params);
+        return false;
     }
 
-    abstract protected function addImplement(array $params);
-    abstract protected function updateImplement($primaryKey, array $params);
+    // /**
+    //  * Добавление элемента должно быть реализовано в наследниках
+    //  */
+    // abstract protected function addImplement(array $params);
+    //
+    // /**
+    // * Обновление элемента должно быть реализовано в наследниках
+    // */
+    // abstract protected function updateImplement($primaryKey, array $params);
 
     /**
      * Обновляет данные или добавляет их
@@ -194,8 +215,6 @@ abstract class AbstractElement implements IElement
         $this->setErrorMessage('');
         $this->setLastOperation($operation);
     }
-
-    abstract protected function isDeletable($primaryKey);
 
     protected function setLastOperation($operation)
     {

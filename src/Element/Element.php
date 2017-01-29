@@ -148,15 +148,6 @@ class Element extends IbElementOrSection
         return $result;
     }
 
-    public function getRow(array $params = array())
-    {
-        $params["limit"] = 1;
-        $result = $this->getList($params);
-        return is_array($result)
-            ? current($result)
-            : false;
-    }
-
     public function getMap()
     {
         return array_merge(
@@ -167,7 +158,7 @@ class Element extends IbElementOrSection
 
     public function add($params)
     {
-        $this->beforeAdd();
+        parent::add($params);
         $params = $this->getUpdatedParamsFromArray($params);
 
         foreach ($params as $fieldName => $value) {
@@ -187,7 +178,6 @@ class Element extends IbElementOrSection
         if (!$id) {
             throw new \Exception($obj->LAST_ERROR . PHP_EOL . print_r($finalParams, true), 400);
         }
-        $this->afterAdd();
         return $id;
     }
 
@@ -199,8 +189,9 @@ class Element extends IbElementOrSection
         }
     }
 
-    protected function updateImplement($primaryKey, array $params)
+    protected function update($primaryKey, array $params)
     {
+        parent::update($primaryKey, $params);
         foreach ($params as $fieldName => $value) {
             $code = $this->getPropertyCodeByProperty($fieldName);
             if ($code) {
@@ -214,7 +205,6 @@ class Element extends IbElementOrSection
         if (!$primaryKey) {
             throw new \Exception($obj->LAST_ERROR . PHP_EOL . print_r($finalParams, true), 400);
         }
-        $this->afterAdd();
         return $primaryKey;
     }
 
