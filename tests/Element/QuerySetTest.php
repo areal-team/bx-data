@@ -73,7 +73,7 @@ class QuerySetTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(
             $this->sqlPattern . 'LIMIT 10' . PHP_EOL,
-            $querySet->toSQL()
+            $querySet->getSelectSQL()
         );
 
         $querySet->setLimit([10, 5]);
@@ -84,7 +84,7 @@ class QuerySetTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(
             $this->sqlPattern . 'LIMIT 10,5' . PHP_EOL,
-            $querySet->toSQL()
+            $querySet->getSelectSQL()
         );
     }
 
@@ -101,7 +101,7 @@ class QuerySetTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(
             'SELECT `b_file`.`FILE_NAME`,`b_file`.`HEIGHT`' . PHP_EOL . 'FROM `b_file`' . PHP_EOL,
-            $querySet->toSQL()
+            $querySet->getSelectSQL()
         );
 
     }
@@ -111,7 +111,7 @@ class QuerySetTest extends \PHPUnit_Framework_TestCase
         $querySet = new QuerySet('b_file');
         $this->assertEquals(
             $this->sqlPattern,
-            $querySet->toSQL()
+            $querySet->getSelectSQL()
         );
 
         $method = new \ReflectionMethod('\Akop\Element\QuerySet', 'buildSelect');
@@ -182,5 +182,54 @@ class QuerySetTest extends \PHPUnit_Framework_TestCase
         //     $method->invoke($querySet, '>ID', '123')
         // );
     }
+
+    public function testGetAddSQL()
+    {
+        $querySet = new QuerySet('b_file');
+        $this->assertEquals(
+            "INSERT INTO `b_file` SET `file_name`='xyz.jpg',`module_id`='main'",
+            $querySet->getAddSQL(['file_name' => 'xyz.jpg', 'module_id' => 'main'])
+        );
+    }
+
+    public function testGetUpdateSQL()
+    {
+        $querySet = new QuerySet('b_file');
+        $this->assertEquals(
+            "UPDATE `b_file` SET `file_name`='xyz.jpg',`module_id`='main'"
+                . " WHERE `id`=123",
+            $querySet->getUpdateSQL(123, ['file_name' => 'xyz.jpg', 'module_id' => 'main'])
+        );
+    }
+
+    public function testGetUpdateSQLWithPrimaryKeyName()
+    {
+        $querySet = new QuerySet('b_file', 'ID');
+        $this->assertEquals(
+            "UPDATE `b_file` SET `file_name`='xyz.jpg',`module_id`='main'"
+                . " WHERE `ID`=123",
+            $querySet->getUpdateSQL(123, ['file_name' => 'xyz.jpg', 'module_id' => 'main'])
+        );
+    }
+
+    public function testGetDeleteSQL()
+    {
+        $querySet = new QuerySet('b_file');
+        $this->assertEquals(
+            "DELETE FROM `b_file` WHERE `id`=123",
+            $querySet->getDeleteSQL(123)
+        );
+    }
+
+    public function testGetDeleteSQLWithPrimaryKeyName()
+    {
+        $querySet = new QuerySet('b_file', 'ID');
+        $this->assertEquals(
+            "DELETE FROM `b_file` WHERE `ID`=123",
+            $querySet->getDeleteSQL(123)
+        );
+    }
+
+
 
 }

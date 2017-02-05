@@ -6,14 +6,54 @@ class QuerySet
 {
     private $tableName = "";
     private $select = [];
-    private $from;
     private $filter = [];
     private $order = [];
     private $limit;
+    private $primaryKeyName;
 
-    public function __construct($tableName)
+    public function __construct($tableName, $primaryKeyName = 'id')
     {
         $this->tableName = $tableName;
+        $this->primaryKeyName = $primaryKeyName;
+    }
+
+    public function getSelectSQL()
+    {
+        $sql = $this->buildSelect() . PHP_EOL;
+        $sql .= $this->buildFrom() . PHP_EOL;
+        $sql .= $this->buildFilter() . PHP_EOL;
+        $sql .= $this->buildOrder() . PHP_EOL;
+        $sql .= $this->buildLimit() . PHP_EOL;
+        // echo $sql;
+        return preg_replace('/\n+/', PHP_EOL, $sql);
+    }
+
+    public function getAddSQL(array $params)
+    {
+        $fields = '';
+        foreach ($params as $key => $value) {
+            $fields .= "`$key`='$value',";
+        }
+        return "INSERT INTO `$this->tableName` SET "
+            . $this->removeLastComma($fields);
+    }
+
+    public function getUpdateSQL($primaryKey, array $params)
+    {
+        $fields = '';
+        foreach ($params as $key => $value) {
+            $fields .= "`$key`='$value',";
+        }
+
+        return "UPDATE `$this->tableName` SET "
+            . $this->removeLastComma($fields)
+            . " WHERE `$this->primaryKeyName`=$primaryKey";
+    }
+
+    public function getDeleteSQL($primaryKey)
+    {
+        return "DELETE FROM `$this->tableName`"
+            . " WHERE `$this->primaryKeyName`=$primaryKey";
     }
 
     public function addSelect(array $params = [])
@@ -45,17 +85,6 @@ class QuerySet
         $this->limit = $limit;
     }
 
-    public function toSQL()
-    {
-        $sql = $this->buildSelect() . PHP_EOL;
-        $sql .= $this->buildFrom() . PHP_EOL;
-        $sql .= $this->buildFilter() . PHP_EOL;
-        $sql .= $this->buildOrder() . PHP_EOL;
-        $sql .= $this->buildLimit() . PHP_EOL;
-        // echo $sql;
-        return preg_replace('/\n+/', PHP_EOL, $sql);
-    }
-
     private function buildSelect()
     {
         if (empty($this->select)) {
@@ -83,9 +112,9 @@ class QuerySet
         $filter = '';
         foreach ($this->filter as $fieldName => $fieldValue) {
             $operand = $this->getOperand($fieldName, $fieldValue);
-            $filter .= "`$this->tableName`.`$fieldName` $operand '$fieldValue',";
+            $filter .= "`$this->tableName`.`$fieldName` $operand '$fieldValue' AND ";
         }
-        return 'WHERE ' . $this->removeLastComma($filter);
+        return 'WHERE ' . $this->removeLastAnd($filter);
     }
 
     /**
@@ -137,6 +166,14 @@ class QuerySet
     private function removeLastComma($var)
     {
         return substr($var, 0, strlen($var) - 1);
+    }
+
+    /**
+     * Удаляет последний AND
+     */
+    private function removeLastAnd($var)
+    {
+        return substr($var, 0, strlen($var) - 5);
     }
 
     /**
