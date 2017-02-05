@@ -17,11 +17,12 @@ class QuerySet
         $this->primaryKeyName = $primaryKeyName;
     }
 
-    public function getSelectSQL()
+    public function getSelectSQL(array $fields = [])
     {
+        // \Akop\Util::pre($fields, 'getSelectSQL');
         $sql = $this->buildSelect() . PHP_EOL;
         $sql .= $this->buildFrom() . PHP_EOL;
-        $sql .= $this->buildFilter() . PHP_EOL;
+        $sql .= $this->buildFilter($fields) . PHP_EOL;
         $sql .= $this->buildOrder() . PHP_EOL;
         $sql .= $this->buildLimit() . PHP_EOL;
         // echo $sql;
@@ -103,18 +104,50 @@ class QuerySet
         return "FROM `$this->tableName`";
     }
 
-    private function buildFilter()
+    private function buildFilter(array $fields = [])
     {
         if (empty($this->filter)) {
             return "";
         }
 
+        $fieldPrefix = new FieldPrefix($fields);
+        $fields = $fieldPrefix->getFieldsPrefixes(array_keys($this->filter));
+        // \Akop\Util::pre($fields, 'buildFilter');
+
         $filter = '';
-        foreach ($this->filter as $fieldName => $fieldValue) {
-            $operand = $this->getOperand($fieldName, $fieldValue);
-            $filter .= "`$this->tableName`.`$fieldName` $operand '$fieldValue' AND ";
+        foreach ($fields as $fieldName => $prefix) {
+            $key = $prefix . $fieldName;
+
+            $filter .= $this->getExpression(
+                $fieldName,
+                $this->filter[$key],
+                $prefix
+            );
         }
         return 'WHERE ' . $this->removeLastAnd($filter);
+    }
+
+    private function getExpression($fieldName, $fieldValue, $prefix = '')
+    {
+        $operand = $this->getOperand(
+            $fieldValue,
+            $prefix
+        );
+        switch ($operand) {
+            case 'IN':
+                $values = '';
+                foreach ($fieldValue as $value) {
+                    $values .= "'$value',";
+                }
+                return "`$this->tableName`.`$fieldName` IN ({$this->removeLastComma($values)}) AND ";
+                break;
+            case 'BETWEEN':
+                return "`$this->tableName`.`$fieldName` BETWEEN '{$fieldValue[0]}' AND '{$fieldValue[1]}' AND ";
+                break;
+            default:
+                return "`$this->tableName`.`$fieldName` $operand '$fieldValue' AND ";
+                break;
+        }
     }
 
     /**
@@ -123,10 +156,23 @@ class QuerySet
      * @param $fieldValue string значение поля
      * @todo Учитывать префиксы в соответствии с битриксовыми стандартами
      */
-    private function getOperand($fieldName, $fieldValue)
+    private function getOperand($fieldValue, $prefix = '')
     {
         if (is_numeric($fieldValue)) {
-            return '=';
+            if (empty($prefix)) {
+                return '=';
+            }
+            return $prefix;
+        }
+
+        if (is_array($fieldValue)) {
+            if ($prefix == '><') {
+                return 'BETWEEN';
+            }
+            return 'IN';
+        }
+        if (!empty($prefix)) {
+            return $prefix;
         }
         return 'LIKE';
     }

@@ -2,8 +2,8 @@
 namespace Akop\Element;
 
 /**
- * Базовый класс для элементов
- * В нем реализован основной функционал для работы с данными
+ * Класс для работы с параметрами
+ * Подключается к классам AbstractElement
  */
 trait ParamTrait
 {
@@ -12,6 +12,35 @@ trait ParamTrait
         2 => ["!=", "!%", "><", ">=", "<=", "=%", "%=", "!@"],
         3 => ["!><", "!=%", "!%="],
     ];
+
+    /*
+    static $triple_char = array(
+		"!><"=>"NB", //not between
+		"!=%"=>"NM", //not Identical by like
+		"!%="=>"NM", //not Identical by like
+	);
+
+	static $double_char = array(
+		"!="=>"NI", //not Identical
+		"!%"=>"NS", //not substring
+		"><"=>"B",  //between
+		">="=>"GE", //greater or equal
+		"<="=>"LE", //less or equal
+		"=%"=>"M", //Identical by like
+		"%="=>"M", //Identical by like
+		"!@"=>"NIN", //Identical by like
+	);
+
+	static $single_char = array(
+		"="=>"I", //Identical
+		"%"=>"S", //substring
+		"?"=>"?", //logical
+		">"=>"G", //greater
+		"<"=>"L", //less
+		"!"=>"N", // not field LIKE val
+		"@"=>"IN" // IN (new SqlExpression)
+	);    
+    */
     protected $params = [];
 
     /**

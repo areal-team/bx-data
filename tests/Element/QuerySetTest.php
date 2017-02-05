@@ -98,10 +98,19 @@ class QuerySetTest extends \PHPUnit_Framework_TestCase
             'SELECT `b_file`.`FILE_NAME`,`b_file`.`HEIGHT`',
             $method->invoke($querySet)
         );
+    }
 
+    public function testGetdSelectSQL()
+    {
+        $querySet = new QuerySet('b_file');
+        $querySet->addFilter(['><FILE_SIZE' => [100000, 200000]]);
+        $querySet->addSelect(['FILE_NAME', 'HEIGHT']);
         $this->assertEquals(
-            'SELECT `b_file`.`FILE_NAME`,`b_file`.`HEIGHT`' . PHP_EOL . 'FROM `b_file`' . PHP_EOL,
-            $querySet->getSelectSQL()
+            'SELECT `b_file`.`FILE_NAME`,`b_file`.`HEIGHT`' . PHP_EOL
+                . 'FROM `b_file`' . PHP_EOL
+                . "WHERE `b_file`.`FILE_SIZE` BETWEEN '100000' AND '200000'" . PHP_EOL
+            ,
+            $querySet->getSelectSQL(['FILE_SIZE'])
         );
 
     }
@@ -164,23 +173,57 @@ class QuerySetTest extends \PHPUnit_Framework_TestCase
         $method->setAccessible(true);
         $this->assertEquals(
             'LIKE',
-            $method->invoke($querySet, 'FILE_NAME', 'xyz.jpg')
+            $method->invoke($querySet, 'xyz.jpg')
         );
 
         $this->assertEquals(
             'LIKE',
-            $method->invoke($querySet, 'FILE_NAME', '123.jpg')
+            $method->invoke($querySet, '123.jpg')
         );
 
         $this->assertEquals(
             '=',
-            $method->invoke($querySet, 'ID', '123')
+            $method->invoke($querySet, '123')
         );
 
-        // $this->assertEquals(
-        //     '>',
-        //     $method->invoke($querySet, '>ID', '123')
-        // );
+        $this->assertEquals(
+            'IN',
+            $method->invoke($querySet, [1,2,3])
+        );
+    }
+
+    public function testGetExpression()
+    {
+        $querySet = new QuerySet('b_file');
+        $method = new \ReflectionMethod('\Akop\Element\QuerySet', 'getExpression');
+        $method->setAccessible(true);
+        $this->assertEquals(
+            "`b_file`.`name` LIKE 'Vasya' AND ",
+            $method->invoke($querySet, 'name', 'Vasya')
+        );
+        $this->assertEquals(
+            "`b_file`.`salary` = '2000' AND ",
+            $method->invoke($querySet, 'salary', 2000)
+        );
+        $this->assertEquals(
+            "`b_file`.`name` IN ('Vasya','Petr','Anna') AND ",
+            $method->invoke($querySet, 'name', ['Vasya', 'Petr', 'Anna'])
+        );
+        $this->assertEquals(
+            "`b_file`.`salary` > '2000' AND ",
+            $method->invoke($querySet, 'salary', 2000, '>')
+        );
+
+        $this->assertEquals(
+            "`b_file`.`salary` BETWEEN '2000' AND '3000' AND ",
+            $method->invoke($querySet, 'salary', [2000, 3000], '><')
+        );
+
+        $this->assertEquals(
+            "`b_file`.`date_start` > '03.02.2017' AND ",
+            $method->invoke($querySet, 'date_start', '03.02.2017', '>')
+        );
+
     }
 
     public function testGetAddSQL()

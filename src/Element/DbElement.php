@@ -30,14 +30,14 @@ class DbElement extends AbstractElement
         parent::getList($params);
         //\Akop\Util::pre($this->params, 'getList params');
         // \Akop\Util::pre($this->sqlHelper, 'getList this->sqlHelper');
-        $querySet = new QuerySet($this->tableName);
+        $querySet = new QuerySet($this->tableName, $this->primaryKey);
         $querySet->addSelect($this->params['select']);
         $querySet->addFilter($this->params['filter']);
         $querySet->addOrder($this->params['order']);
         $querySet->setLimit($this->params['limit']);
        // \Akop\Util::pre($querySet->getSelectSQL(), '$querySet->getSelectSQL');
 
-        $list = $this->connection->query($querySet->getSelectSQL());
+        $list = $this->connection->query($querySet->getSelectSQL(array_keys($this->getMap())));
         while ($item = $list->fetch()) {
             $result[] = $item;
         }
