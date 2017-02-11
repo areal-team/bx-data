@@ -66,7 +66,7 @@ class HlElement extends AbstractElement
     public function add(array $params)
     {
         parent::add($params);
-        $result = $this->entityDC->add($params);
+        $result = $this->entityDC->add($this->params);
         return $result->getId();
     }
 
@@ -97,7 +97,7 @@ class HlElement extends AbstractElement
     public function update($primaryKey, array $params)
     {
         parent::update($primaryKey, $params);
-        $this->entityDC->update($primaryKey, $params);
+        $this->entityDC->update($primaryKey, $this->params);
         return $primaryKey;
     }
 

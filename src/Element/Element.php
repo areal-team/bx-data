@@ -159,9 +159,8 @@ class Element extends IbElementOrSection
     public function add($params)
     {
         parent::add($params);
-        $params = $this->getUpdatedParamsFromArray($params);
 
-        foreach ($params as $fieldName => $value) {
+        foreach ($this->params as $fieldName => $value) {
             $code = $this->getPropertyCodeByProperty($fieldName);
             if ($code) {
                 $finalParams["PROPERTY_VALUES"][$code] = $value;
@@ -192,7 +191,7 @@ class Element extends IbElementOrSection
     protected function update($primaryKey, array $params)
     {
         parent::update($primaryKey, $params);
-        foreach ($params as $fieldName => $value) {
+        foreach ($this->params as $fieldName => $value) {
             $code = $this->getPropertyCodeByProperty($fieldName);
             if ($code) {
                 $finalParams["PROPERTY_VALUES"][$code] = $value;

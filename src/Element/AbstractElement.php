@@ -66,7 +66,7 @@ class AbstractElement implements ElementInterface
     {
         $this->startNewOperation('add');
         $params = $this->compressFields($params);
-        $params = $this->getUpdatedParamsFromArray($params);
+        $this->params = $this->getUpdatedParamsFromArray($params);
         return false;
     }
 
@@ -98,19 +98,9 @@ class AbstractElement implements ElementInterface
     {
         $this->startNewOperation('update');
         $params = $this->compressFields($params);
-        $params = $this->getUpdatedParamsFromArray($params);
+        $this->params = $this->getUpdatedParamsFromArray($params);
         return false;
     }
-
-    // /**
-    //  * Добавление элемента должно быть реализовано в наследниках
-    //  */
-    // abstract protected function addImplement(array $params);
-    //
-    // /**
-    // * Обновление элемента должно быть реализовано в наследниках
-    // */
-    // abstract protected function updateImplement($primaryKey, array $params);
 
     /**
      * Обновляет данные или добавляет их
