@@ -189,4 +189,16 @@ class AbstractElementTest extends \PHPUnit_Framework_TestCase
         // print_r($property->getValue($element));
         $this->assertEquals($paramsReference, $property->getValue($element));
     }
+
+    public function testUpdateParamsOrder()
+    {
+        $property = new \ReflectionProperty('\Akop\Element\AbstractElement', 'params');
+        $property->setAccessible(true);
+
+        $this->testingClass->getList(['order' => ['weight']]);
+        // $this->testingClass->getList(['order' => ['weight' => 'asc']]);
+        $params = $property->getValue($this->testingClass);
+        $this->assertEquals(['weight' => 'asc'], $params['order']);
+    }
+
 }

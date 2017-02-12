@@ -39,7 +39,7 @@ trait ParamTrait
 		"<"=>"L", //less
 		"!"=>"N", // not field LIKE val
 		"@"=>"IN" // IN (new SqlExpression)
-	);    
+	);
     */
     protected $params = [];
 
@@ -139,7 +139,17 @@ trait ParamTrait
      */
     protected function updateParamsOrder()
     {
-        $this->updateParamsBase("order");
+        if (!empty($this->params["order"])) {
+            foreach ($this->params["order"] as $key => $value) {
+                if (is_numeric($key)) {
+                    $params[$value] = 'asc';
+                } else {
+                    $params[$key] = $value;
+                }
+            }
+            $this->params["order"] = $params;
+            $this->updateParamsBase("order");
+        }
     }
 
     /**
