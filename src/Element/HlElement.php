@@ -97,6 +97,7 @@ class HlElement extends AbstractElement
     public function update($primaryKey, array $params)
     {
         parent::update($primaryKey, $params);
+        // \Akop\Util::pre([$primaryKey, $this->params], 'HlElement update');
         $this->entityDC->update($primaryKey, $this->params);
         return $primaryKey;
     }

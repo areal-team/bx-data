@@ -3,7 +3,6 @@
 namespace Akop\Element;
 
 use \Bitrix\Highloadblock as HL;
-use \Akop\Element as Element;
 
 /**
  * Класс для работы с данными из highload блоков

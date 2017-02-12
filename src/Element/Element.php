@@ -156,7 +156,7 @@ class Element extends IbElementOrSection
         );
     }
 
-    public function add($params)
+    public function add(array $params)
     {
         parent::add($params);
 
@@ -188,7 +188,7 @@ class Element extends IbElementOrSection
         }
     }
 
-    protected function update($primaryKey, array $params)
+    public function update($primaryKey, array $params)
     {
         parent::update($primaryKey, $params);
         foreach ($this->params as $fieldName => $value) {
