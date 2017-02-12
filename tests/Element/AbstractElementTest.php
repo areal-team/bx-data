@@ -196,9 +196,12 @@ class AbstractElementTest extends \PHPUnit_Framework_TestCase
         $property->setAccessible(true);
 
         $this->testingClass->getList(['order' => ['weight']]);
-        // $this->testingClass->getList(['order' => ['weight' => 'asc']]);
         $params = $property->getValue($this->testingClass);
         $this->assertEquals(['weight' => 'asc'], $params['order']);
+
+        $this->testingClass->getList(['order' => ['weight' => 'desc']]);
+        $params = $property->getValue($this->testingClass);
+        $this->assertEquals(['weight' => 'desc'], $params['order']);
     }
 
 }
