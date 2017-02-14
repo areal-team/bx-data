@@ -35,32 +35,28 @@ class Section extends IbElementOrSection
         "EXTERNAL_ID",
     ];
 
-    public function __construct(array $params = array())
+    public function __construct()
     {
         \CModule::IncludeModule("iblock");
-        $this->setIblockId($params);
+        $this->setIblockId();
         parent::__construct();
     }
 
-
-
-    public function getList(array $params = array())
+    public function getList(array $params = [])
     {
-        if (!empty($params["limit"])) {
-            $params["limit"] = array("nTopCount" => $params["limit"]);
-        }
         parent::getList($params);
 
+        $obj = new \CIBlockSection;
         if (!empty($params["filter"]["IBLOCK_SECTION_ID"])) {
-            $obj = \CIBlockSection::GetByID($params["filter"]["IBLOCK_SECTION_ID"]);
-            if ($section = $obj->Fetch()) {
+            $sectionObj = $obj->GetByID($params["filter"]["IBLOCK_SECTION_ID"]);
+            if ($section = $sectionObj->Fetch()) {
                 unset($this->params["filter"]["IBLOCK_SECTION_ID"]);
                 $this->params["filter"]["LEFT_MARGIN"] = $section["LEFT_MARGIN"] + 1;
                 $this->params["filter"]['RIGHT_MARGIN'] = $section["RIGHT_MARGIN"] - 1;
             }
         }
 
-        $obj = \CIBlockSection::GetList(
+        $list = $obj->GetList(
             $this->params["order"],
             $this->params["filter"],
             $this->params["count"],
@@ -68,14 +64,14 @@ class Section extends IbElementOrSection
             $this->params["limit"]
         );
 
-        while ($section = $obj->GetNext(true, false)) {
+        while ($section = $list->GetNext(true, false)) {
             $result[$section['ID']] = $section;
         }
 
         return $result;
     }
 
-    public function add($params)
+    public function add(array $params)
     {
         parent::add($params);
         $bs = new \CIBlockSection;

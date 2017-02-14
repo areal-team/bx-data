@@ -8,7 +8,21 @@ class IbElementOrSection extends AbstractElement
     protected $iblockCode = false;
     protected $iblockId = false;
 
-    protected function setIblockId($params)
+    public function getList(array $params = array())
+    {
+        $params["filter"]["IBLOCK_ID"] = $this->iblockId;
+        /* Оставляем возможность выбрать неактивные элементы */
+        if (!isset($params["filter"]["!ACTIVE"])) {
+            $params["filter"]["ACTIVE"] = "Y";
+        }
+
+        if (!empty($params["limit"])) {
+            $params["limit"] = array("nTopCount" => $params["limit"]);
+        }
+        parent::getList($params);
+    }
+
+    protected function setIblockId($params = [])
     {
         if (!empty($params['iblockCode'])) {
             $this->iblockCode = $params['iblockCode'];

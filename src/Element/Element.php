@@ -2,8 +2,6 @@
 
 namespace Akop\Element;
 
-\CModule::IncludeModule("iblock");
-
 /**
  * Класс описывает функции для работы с Элементами инфоблоков в более простом стиле
  * @author: Андрей Копылов
@@ -39,12 +37,14 @@ class Element extends IbElementOrSection
 
     /**
      * @param integer $iblockId
-     * @param bool|bool $noLimit - устанавливать в true при необходимости выборки без ограничений (это черевато нехваткой памяти)
+     * @param bool $noLimit - устанавливать в true при необходимости выборки без ограничений
+     *                        (это черевато нехваткой памяти)
      * @return void
      * @important
      */
     public function __construct(array $params = array())
     {
+        \CModule::IncludeModule("iblock");
         $this->setIblockId($params);
         $this->noLimit = (isset($params["noLimit"]) ? $params["noLimit"] : $this->noLimit);
 
@@ -64,66 +64,57 @@ class Element extends IbElementOrSection
     public function getList(array $params = array())
     {
         parent::getList($params);
+        $params = $this->params;
         /* если нет ограничений на выборку, то выбрасываем исключение, в противном случае скрипт падает на нехватке памяти
             Можно ограничивать не только количество записей, но и число возвращаемых полей.
             При ограничении только выборкой полей, скрипту все равно может не хватить памяти.
             Обработать это не представляется возможным, оставляю на откуп пользователю класса.
         */
-
-        $params = $this->params;
+/*
         if ((empty($params)
             || (count($params["filter"])  == 0) && empty($params["limit"]) && empty($params["select"])
             ) && !$this->noLimit
         ) {
             throw new \Exception("Ограничьте выборку установив параметр 'filter', 'limit' или 'select'", 400);
         }
-
-
-        $params["filter"]["IBLOCK_ID"] = $this->iblockId;
-        /* Оставляем возможность выбрать неактивные элементы */
-        if (!isset($params["filter"]["!ACTIVE"])) {
-            $params["filter"]["ACTIVE"] = "Y";
-        }
+*/
         /* По умолчанию возвращаем ассоциативный массив */
         if (!isset($params["isAssoc"])) {
             $params["isAssoc"] = true;
         }
 
-        if (!empty($params["limit"])) {
-            $params["limit"] = array("nTopCount" => $params["limit"]);
+        $params = array_merge(
+            [
+                "order" => false,
+                "filter" => array("IBLOCK_ID" => $this->iblockId),
+                "group" => false,
+                "limit" => false,
+                "select" => $this->select,
+            ],
+            $params
+        );
+
+
+        /**
+         * В запросах обязательно должен присутствовать ID для того чтобы вернуть ассоциативный массив
+         * Если возвращаем обычный массив, то поле ID не добавляем
+         */
+        if (!in_array("ID", $params["select"]) && $params["isAssoc"]) {
+            $params["select"][] = "ID";
         }
 
-        $params = array_merge(
-                array(
-                    "order" => false,
-                    "filter" => array("IBLOCK_ID" => $this->iblockId),
-                    "group" => false,
-                    "limit" => false,
-                    "select" => $this->select,
-                ),
-                $params
-            );
+        // \CDebug::add($params, 'Element::getList params' . microtime());
+        $obj = new \CIBlockElement;
+        $list = $obj->GetList(
+            $params["order"],
+            $params["filter"],
+            $params["group"],
+            $params["limit"],
+            $params["select"]
+        );
 
-
-            /**
-             * В запросах обязательно должен присутствовать ID для того чтобы вернуть ассоциативный массив
-             * Если возвращаем обычный массив, то поле ID не добавляем
-             */
-            if (!in_array("ID", $params["select"]) && $params["isAssoc"]) {
-                $params["select"][] = "ID";
-            }
-
-            // \CDebug::add($params, 'Element::getList params' . microtime());
-            $obj = \CIBlockElement::GetList(
-                $params["order"],
-                $params["filter"],
-                $params["group"],
-                $params["limit"],
-                $params["select"]
-            );
-
-        $result = array();
-        while ($el = $obj->Fetch()) {
+        $result = [];
+        while ($el = $list->Fetch()) {
             $key = ($params["isAssoc"]
                     ? $el["ID"]
                     : count($result)
@@ -138,10 +129,10 @@ class Element extends IbElementOrSection
     {
         $this->setIblockId($params);
         $result = array();
-        echo $this->iblockId;
-        $db_props = \CIBlockElement::GetProperty($this->iblockId, $params['id'], $params['order'], $params['filter']);
-        while ($ar_props = $db_props->Fetch()) {
-            $res = \CIBlockElement::GetByID($ar_props['VALUE']);
+        // echo $this->iblockId;
+        $dbProps = \CIBlockElement::GetProperty($this->iblockId, $params['id'], $params['order'], $params['filter']);
+        while ($props = $dbProps->Fetch()) {
+            $res = \CIBlockElement::GetByID($props['VALUE']);
             $prop = $res->GetNext();
             $result[] = $prop;
         }
@@ -181,10 +172,10 @@ class Element extends IbElementOrSection
     }
 
 
-    public function updateProperties($id, array $params = [])
+    public function updateProperties($primaryKey, array $params = [])
     {
-        if ($id > 0) {
-            \CIBlockElement::SetPropertyValuesEx($id, false, $params);
+        if ($primaryKey > 0) {
+            \CIBlockElement::SetPropertyValuesEx($primaryKey, false, $params);
         }
     }
 
@@ -208,11 +199,11 @@ class Element extends IbElementOrSection
     }
 
 
-    public function updateProperty($id, $nameProperty, $valueProperty)
+    public function updateProperty($primaryKey, $nameProperty, $valueProperty)
     {
-        if (!empty($id)) {
+        if (!empty($primaryKey)) {
             \CIBlockElement::SetPropertyValuesEx(
-                $id,
+                $primaryKey,
                 $this->iblockId,
                 [$this->getPropertyCode($nameProperty) => $valueProperty]
             );
