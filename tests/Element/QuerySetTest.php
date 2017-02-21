@@ -6,11 +6,11 @@ use \Akop\Element\QuerySet as QuerySet;
 class QuerySetTest extends \PHPUnit_Framework_TestCase
 {
     protected $testingClass;
-    private $sqlPattern = 'SELECT `b_file`.*' . PHP_EOL . 'FROM `b_file`' . PHP_EOL;
+    private $sqlPattern;
 
     public function setUp()
     {
-        // $this->testingClass = new \Akop\Element\QuerySet;
+        $this->sqlPattern = 'SELECT `b_file`.*' . PHP_EOL . 'FROM `b_file`' . PHP_EOL;
     }
 
     public function testConstructor()
