@@ -35,13 +35,6 @@ class Section extends IbElementOrSection
         "EXTERNAL_ID",
     ];
 
-    public function __construct()
-    {
-        \CModule::IncludeModule("iblock");
-        $this->setIblockId();
-        parent::__construct();
-    }
-
     public function getList(array $params = [])
     {
         parent::getList($params);
@@ -74,14 +67,29 @@ class Section extends IbElementOrSection
     public function add(array $params)
     {
         parent::add($params);
-        $bs = new \CIBlockSection;
-        if (empty($params["IBLOCK_ID"])) {
-            $params["IBLOCK_ID"] = $this->iblockId;
+        // \Akop\Util::pre($this->params, 'add $params');
+        $obj = new \CIBlockSection;
+        $primaryKey = $obj->Add($this->params);
+        if (!$primaryKey) {
+            throw new \Exception($obj->LAST_ERROR . PHP_EOL . print_r($params, true), 400);
         }
-        $id = $bs->Add($params);
-        if (!$id) {
-            throw new \Exception($bs->LAST_ERROR . PHP_EOL . print_r($params, true), 400);
-        }
-        return $id;
+        return $primaryKey;
+    }
+
+    /**
+     * Возвращает массив SEO для раздела с ключами:
+     *      SECTION_META_TITLE
+     *      SECTION_META_KEYWORDS
+     *      SECTION_META_DESCRIPTION
+     *      SECTION_PAGE_TITLE
+     * @param int $primaryKey
+     */
+    public function getSEO($sectionId)
+    {
+        $ipropValues = new \Bitrix\Iblock\InheritedProperty\InheritedProperty\SectionValues(
+            $this->iblockId,
+            $sectionId
+        );
+        return $ipropValues->getValues();
     }
 }

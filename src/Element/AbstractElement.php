@@ -13,7 +13,6 @@ class AbstractElement implements ElementInterface
     protected $fields = ["ID"];
     protected $reversedFields = [];
     protected $compressedFields = [];
-    protected $rename = [];
     protected $primaryKey = "ID";
 
     private $errorMesage = '';

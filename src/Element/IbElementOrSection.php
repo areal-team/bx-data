@@ -1,12 +1,17 @@
 <?php
 namespace Akop\Element;
 
-\CModule::IncludeModule("iblock");
-
 class IbElementOrSection extends AbstractElement
 {
     protected $iblockCode = false;
     protected $iblockId = false;
+
+    public function __construct()
+    {
+        \CModule::IncludeModule("iblock");
+        $this->setIblockId();
+        parent::__construct();
+    }
 
     public function getList(array $params = array())
     {
@@ -22,6 +27,18 @@ class IbElementOrSection extends AbstractElement
         parent::getList($params);
     }
 
+    public function add(array $params)
+    {
+        if (empty($params["IBLOCK_ID"])) {
+            $params["IBLOCK_ID"] = $this->iblockId;
+        }
+        parent::add($params);
+    }
+
+    /**
+     * Устанавливает id инфоблока по переданным параметрам
+     * @param array $params
+     */
     protected function setIblockId($params = [])
     {
         if (!empty($params['iblockCode'])) {

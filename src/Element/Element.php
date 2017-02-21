@@ -3,16 +3,12 @@
 namespace Akop\Element;
 
 /**
- * Класс описывает функции для работы с Элементами инфоблоков в более простом стиле
- * @author: Андрей Копылов
- * @mail: aakopylov@mail.ru,
- * @skype: andrew.kopylov.74
+ * Класс описывает функции для работы с элементами инфоблоков в стиле ядра D7
+ * @author: Андрей Копылов <aakopylov@mail.ru>
+ * @license MIT
  */
 class Element extends IbElementOrSection
 {
-    protected $rename = [];
-    protected $select = false;
-    protected $noLimit = false;
     protected $fieldsBase = [
         "id" => "ID",
         "timestampX" => "TIMESTAMP_X",
@@ -34,23 +30,6 @@ class Element extends IbElementOrSection
         "externalId" => "EXTERNAL_ID",
     ];
 
-
-    /**
-     * @param integer $iblockId
-     * @param bool $noLimit - устанавливать в true при необходимости выборки без ограничений
-     *                        (это черевато нехваткой памяти)
-     * @return void
-     * @important
-     */
-    public function __construct(array $params = array())
-    {
-        \CModule::IncludeModule("iblock");
-        $this->setIblockId($params);
-        $this->noLimit = (isset($params["noLimit"]) ? $params["noLimit"] : $this->noLimit);
-
-        parent::__construct();
-    }
-
     /**
      * Возвращает массив элементов инфоблока в соответствии с переданными паметрами
      * Можем вернуть ассоциативный массив или простой.
@@ -65,19 +44,7 @@ class Element extends IbElementOrSection
     {
         parent::getList($params);
         $params = $this->params;
-        /* если нет ограничений на выборку, то выбрасываем исключение, в противном случае скрипт падает на нехватке памяти
-            Можно ограничивать не только количество записей, но и число возвращаемых полей.
-            При ограничении только выборкой полей, скрипту все равно может не хватить памяти.
-            Обработать это не представляется возможным, оставляю на откуп пользователю класса.
-        */
-/*
-        if ((empty($params)
-            || (count($params["filter"])  == 0) && empty($params["limit"]) && empty($params["select"])
-            ) && !$this->noLimit
-        ) {
-            throw new \Exception("Ограничьте выборку установив параметр 'filter', 'limit' или 'select'", 400);
-        }
-*/
+
         /* По умолчанию возвращаем ассоциативный массив */
         if (!isset($params["isAssoc"])) {
             $params["isAssoc"] = true;
@@ -114,12 +81,12 @@ class Element extends IbElementOrSection
         );
 
         $result = [];
-        while ($el = $list->Fetch()) {
+        while ($elem = $list->Fetch()) {
             $key = ($params["isAssoc"]
-                    ? $el["ID"]
+                    ? $elem["ID"]
                     : count($result)
                 );
-            $result[$key] = $this->getRenamed($el);
+            $result[$key] = $this->getRenamed($elem);
         }
 
         return $result;
@@ -130,9 +97,10 @@ class Element extends IbElementOrSection
         $this->setIblockId($params);
         $result = array();
         // echo $this->iblockId;
-        $dbProps = \CIBlockElement::GetProperty($this->iblockId, $params['id'], $params['order'], $params['filter']);
+        $obj = new \CIBlockElement;
+        $dbProps = $obj->GetProperty($this->iblockId, $params['id'], $params['order'], $params['filter']);
         while ($props = $dbProps->Fetch()) {
-            $res = \CIBlockElement::GetByID($props['VALUE']);
+            $res = $obj->GetByID($props['VALUE']);
             $prop = $res->GetNext();
             $result[] = $prop;
         }
@@ -161,35 +129,26 @@ class Element extends IbElementOrSection
         }
 
         $obj = new \CIBlockElement;
-        if (empty($finalParams["IBLOCK_ID"])) {
-            $finalParams["IBLOCK_ID"] = $this->iblockId;
-        }
-        $id = $obj->Add($finalParams);
-        if (!$id) {
+        $primaryKey = $obj->Add($finalParams);
+        if (!$primaryKey) {
             throw new \Exception($obj->LAST_ERROR . PHP_EOL . print_r($finalParams, true), 400);
         }
-        return $id;
+        return $primaryKey;
     }
 
 
     public function updateProperties($primaryKey, array $params = [])
     {
         if ($primaryKey > 0) {
-            \CIBlockElement::SetPropertyValuesEx($primaryKey, false, $params);
+            $obj = new \CIBlockElement;
+            $obj->SetPropertyValuesEx($primaryKey, false, $params);
         }
     }
 
     public function update($primaryKey, array $params)
     {
         parent::update($primaryKey, $params);
-        foreach ($this->params as $fieldName => $value) {
-            $code = $this->getPropertyCodeByProperty($fieldName);
-            if ($code) {
-                $finalParams["PROPERTY_VALUES"][$code] = $value;
-            } else {
-                $finalParams[$fieldName] = $value;
-            }
-        }
+        $finalParams = $this->getUpdateParams($this->params);
         $obj = new \CIBlockElement;
         $primaryKey = $obj->Update($primaryKey, $finalParams);
         if (!$primaryKey) {
@@ -198,11 +157,28 @@ class Element extends IbElementOrSection
         return $primaryKey;
     }
 
+    /**
+     * @param array $params
+     */
+    private function getUpdateParams(array $params)
+    {
+        foreach ($params as $fieldName => $value) {
+            $code = $this->getPropertyCodeByProperty($fieldName);
+            if ($code) {
+                $result["PROPERTY_VALUES"][$code] = $value;
+            } else {
+                $result[$fieldName] = $value;
+            }
+        }
+        return $result;
+    }
+
 
     public function updateProperty($primaryKey, $nameProperty, $valueProperty)
     {
         if (!empty($primaryKey)) {
-            \CIBlockElement::SetPropertyValuesEx(
+            $obj = new \CIBlockElement;
+            $obj->SetPropertyValuesEx(
                 $primaryKey,
                 $this->iblockId,
                 [$this->getPropertyCode($nameProperty) => $valueProperty]
@@ -211,7 +187,7 @@ class Element extends IbElementOrSection
     }
 
 
-    public function getPropertyCode($nameProperty)
+    private function getPropertyCode($nameProperty)
     {
         return ((stripos($this->fields[$nameProperty], "PROPERTY_") !== false)
             ? substr($this->fields[$nameProperty], 9)
@@ -219,7 +195,7 @@ class Element extends IbElementOrSection
         );
     }
 
-    public function getPropertyCodeByProperty($nameProperty)
+    private function getPropertyCodeByProperty($nameProperty)
     {
         return ((stripos($nameProperty, "PROPERTY_") !== false)
             ? substr($nameProperty, 9)
@@ -238,5 +214,22 @@ class Element extends IbElementOrSection
             ? $value . "_VALUE"
             : $value
         );
+    }
+
+    /**
+     * Возвращает массив SEO для элемента с ключами:
+     *      ELEMENT_META_TITLE
+     *      ELEMENT_META_KEYWORDS
+     *      ELEMENT_META_DESCRIPTION
+     *      ELEMENT_PAGE_TITLE
+     * @param int $primaryKey
+     */
+    public function getSEO($elementId)
+    {
+        $ipropValues = new \Bitrix\Iblock\InheritedProperty\InheritedProperty\ElementValues(
+            $this->iblockId,
+            $elementId
+        );
+        return $ipropValues->getValues();
     }
 }
