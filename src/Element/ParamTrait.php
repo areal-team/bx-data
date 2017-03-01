@@ -189,6 +189,7 @@ trait ParamTrait
                 $result[$resultKey] = $value;
             }
         }
+        // \Akop\Util::pre([$params, $result, $this->fields], 'getUpdatedParamsFromArray $params');
         return $result;
     }
 

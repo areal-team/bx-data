@@ -29,6 +29,7 @@ class Element extends IbElementOrSection
         "detailPicture" => "DETAIL_PICTURE",
         "externalId" => "EXTERNAL_ID",
     ];
+    protected $fieldsExtra = [];
 
     /**
      * Возвращает массив элементов инфоблока в соответствии с переданными паметрами
@@ -129,6 +130,7 @@ class Element extends IbElementOrSection
         }
 
         $obj = new \CIBlockElement;
+        // \Akop\Util::pre([$params, $this->params, $finalParams], '$finalParams');
         $primaryKey = $obj->Add($finalParams);
         if (!$primaryKey) {
             throw new \Exception($obj->LAST_ERROR . PHP_EOL . print_r($finalParams, true), 400);
