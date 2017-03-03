@@ -69,11 +69,21 @@ class Section extends IbElementOrSection
         parent::add($params);
         // \Akop\Util::pre($this->params, 'add $params');
         $obj = new \CIBlockSection;
-        $primaryKey = $obj->Add($this->params);
-        if (!$primaryKey) {
-            throw new \Exception($obj->LAST_ERROR . PHP_EOL . print_r($params, true), 400);
+        if ($primaryKey = $obj->Add($this->params)) {
+            return $primaryKey;
         }
-        return $primaryKey;
+        throw new \Exception($obj->LAST_ERROR . PHP_EOL . print_r($params, true), 400);
+    }
+
+    public function update($primaryKey, array $params)
+    {
+        parent::update($primaryKey, $params);
+        // \Akop\Util::pre($this->params, 'add $params');
+        $obj = new \CIBlockSection;
+        if ($res = $obj->Update($primaryKey, $this->params)) {
+            return true;
+        }
+        throw new \Exception($obj->LAST_ERROR . PHP_EOL . print_r($params, true), 400);
     }
 
     /**
