@@ -45,16 +45,15 @@ class HlElement extends AbstractElement
     public function getList(array $params = array())
     {
         parent::getList($params);
-        // \Akop\Util::pre($this->params, 'HlElement getList $this->params');
         $res = $this->entityDC->getList($this->params);
+        $result = [];
         while ($item = $res->Fetch()) {
-            $key = (isset($item["ID"]))
-                    ? $item["ID"]
-                    : count($result);
-
-            $result[$key] = $this->getRenamed($item);
+            if (isset($item["ID"]) && $this->isAssoc) {
+                $result[$item["ID"]] = $this->getRenamed($item);
+            } else {
+                $result[] = $this->getRenamed($item);
+            }
         }
-
         return $result;
     }
 

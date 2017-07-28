@@ -14,6 +14,7 @@ class AbstractElement implements ElementInterface
     protected $reversedFields = [];
     protected $compressedFields = [];
     protected $primaryKey = "ID";
+    protected $isAssoc = true;
 
     private $errorMesage = '';
     private $lastOperation = false;
@@ -40,6 +41,13 @@ class AbstractElement implements ElementInterface
      */
     public function getList(array $params = [])
     {
+        /* По умолчанию возвращаем ассоциативный массив */
+        $this->isAssoc = (isset($params["isAssoc"])
+            ? $params["isAssoc"]
+            : true
+        );
+        unset($params['isAssoc']);
+
         $this->startNewOperation('getList');
         // если передан параметр group, то данные select игнорируем
         if (isset($params["group"])) {
