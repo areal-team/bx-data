@@ -1,2 +1,5 @@
-# getRow(array $params = [])
+# getRow
+```php
+getRow(array $params = [])
+```
 Возвращает **одну строку** в соответствии переданным параметром. В остальном работа функции аналогична [getList](getList.md).
