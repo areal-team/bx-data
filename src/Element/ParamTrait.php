@@ -139,6 +139,9 @@ trait ParamTrait
      */
     protected function updateParamsOrder()
     {
+        if (empty($this->params["order"])) {
+            $this->params["order"] = [];
+        }
         if (!empty($this->params["order"])) {
             foreach ($this->params["order"] as $key => $value) {
                 if (is_numeric($key)) {

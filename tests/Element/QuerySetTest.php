@@ -71,6 +71,7 @@ class QuerySetTest extends \PHPUnit_Framework_TestCase
             $property->getValue($querySet)
         );
 
+        print_r([$this->sqlPattern . PHP_EOL, $querySet->getSelectSQL()]);
         $this->assertEquals(
             $this->sqlPattern . 'LIMIT 10' . PHP_EOL,
             $querySet->getSelectSQL()
@@ -100,7 +101,7 @@ class QuerySetTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testGetdSelectSQL()
+    public function testGetSelectSQL()
     {
         $querySet = new QuerySet('b_file');
         $querySet->addFilter(['><FILE_SIZE' => [100000, 200000]]);
@@ -190,6 +191,16 @@ class QuerySetTest extends \PHPUnit_Framework_TestCase
             'IN',
             $method->invoke($querySet, [1,2,3])
         );
+
+        $this->assertEquals(
+            '=',
+            $method->invoke($querySet, '2017-08-01')
+        );
+
+        $this->assertEquals(
+            'IN',
+            $method->invoke($querySet, ['2017-08-04', '2017-08-10'])
+        );
     }
 
     public function testGetExpression()
@@ -224,6 +235,15 @@ class QuerySetTest extends \PHPUnit_Framework_TestCase
             $method->invoke($querySet, 'date_start', '03.02.2017', '>')
         );
 
+        $this->assertEquals(
+            "`b_file`.`date_start` = '03.02.2017' AND ",
+            $method->invoke($querySet, 'date_start', '03.02.2017', '=')
+        );
+
+        $this->assertEquals(
+          "`b_file`.`date_start` BETWEEN '03.02.2017' AND '03.02.2018' AND ",
+            $method->invoke($querySet, 'date_start', ['03.02.2017', '03.02.2018'], '><')
+        );
     }
 
     public function testGetAddSQL()

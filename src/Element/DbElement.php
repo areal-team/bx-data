@@ -18,8 +18,8 @@ class DbElement extends AbstractElement
     {
         // global $DB;
         // $this->db = $DB;
-        parent::__construct();
         $this->connection = \Bitrix\Main\Application::getConnection();
+        parent::__construct();
         $this->sqlHelper = $this->connection->getSqlHelper();
         // return $this;
     }
@@ -28,16 +28,14 @@ class DbElement extends AbstractElement
     public function getList(array $params = array())
     {
         parent::getList($params);
-        //\Akop\Util::pre($this->params, 'getList params');
-        // \Akop\Util::pre($this->sqlHelper, 'getList this->sqlHelper');
+
         $querySet = new QuerySet($this->tableName, $this->primaryKey);
         $querySet->addSelect($this->params['select']);
         $querySet->addFilter($this->params['filter']);
         $querySet->addOrder($this->params['order']);
         $querySet->setLimit($this->params['limit']);
-       // \Akop\Util::pre($querySet->getSelectSQL(), '$querySet->getSelectSQL');
 
-        $list = $this->connection->query($querySet->getSelectSQL(array_keys($this->getMap())));
+        $list = $this->connection->query($querySet->getSelectSQL(array_keys($this->reversedFields)));
         while ($item = $list->fetch()) {
             $result[] = $item;
         }
@@ -64,5 +62,20 @@ class DbElement extends AbstractElement
         $querySet = new QuerySet($this->tableName, $this->primaryKey);
         $this->connection->queryExecute($querySet->getUpdateSQL($primaryKey, $params));
         return ($this->connection->getAffectedRowsCount() > 0);
+    }
+
+    public function getMap()
+    {
+        $result = $this->fieldsBase;
+
+        $userFields = $this->connection->getTableFields($this->tableName);
+        // \Akop\Util::pre($userFields, '$userFields');
+        // return;
+        foreach ($userFields as $fieldName => $field) {
+            $alias = \Akop\Util::camelize($fieldName);
+            $result[$alias] = $fieldName;
+        }
+
+        return $result;
     }
 }

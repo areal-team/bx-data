@@ -19,14 +19,14 @@ class AbstractElement implements ElementInterface
     private $errorMesage = '';
     private $lastOperation = false;
 
-    protected $translitParams = [
-        "max_len" => "100",
-        "change_case" => "L",
-        "replace_space" => "-",
-        "replace_other" => "-",
-        "delete_repeat_replace" => "true",
-        "use_google" => "false",
-    ];
+    // protected $translitParams = [
+    //     "max_len" => "100",
+    //     "change_case" => "L",
+    //     "replace_space" => "-",
+    //     "replace_other" => "-",
+    //     "delete_repeat_replace" => "true",
+    //     "use_google" => "false",
+    // ];
 
     public function __construct()
     {

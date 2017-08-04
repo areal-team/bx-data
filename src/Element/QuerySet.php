@@ -107,6 +107,7 @@ class QuerySet
     private function buildFilter(array $fields = [])
     {
         if (empty($this->filter)) {
+            \Akop\Util::pre([$fields, $this], 'buildFilter empty');
             return "";
         }
 
@@ -158,19 +159,22 @@ class QuerySet
      */
     private function getOperand($fieldValue, $prefix = '')
     {
-        if (is_numeric($fieldValue)) {
+        if (is_array($fieldValue)) {
+          if ($prefix == '><') {
+            return 'BETWEEN';
+          }
+          return 'IN';
+        }
+        // \Akop\Util::pre([$fieldValue, $prefix], 'getOperand');
+
+        if (is_numeric($fieldValue) || \Akop\Util::isDateValid($fieldValue)) {
             if (empty($prefix)) {
                 return '=';
             }
             return $prefix;
         }
 
-        if (is_array($fieldValue)) {
-            if ($prefix == '><') {
-                return 'BETWEEN';
-            }
-            return 'IN';
-        }
+
         if (!empty($prefix)) {
             return $prefix;
         }

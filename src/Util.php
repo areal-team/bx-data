@@ -77,4 +77,15 @@ class Util
         }
         return $result;
     }
+
+    public static function isDateValid($date)
+    {
+        return self::_isDateValid($date, 'Y-m-d') || self::_isDateValid($date);
+    }
+
+    private static function _isDateValid($date, $format = 'Y-m-d H:i:s')
+    {
+        $d = \DateTime::createFromFormat($format, $date);
+        return $d && $d->format($format) == $date;
+    }
 }
