@@ -37,7 +37,7 @@ class DbElement extends AbstractElement
 
         $list = $this->connection->query($querySet->getSelectSQL(array_keys($this->reversedFields)));
         while ($item = $list->fetch()) {
-            $result[] = $item;
+            $result[] = $this->getRenamed($item);
         }
         return $result;
     }
