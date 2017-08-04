@@ -45,8 +45,9 @@ class DbElement extends AbstractElement
 
     public function add(array $params)
     {
+        parent::add($params);
         $querySet = new QuerySet($this->tableName);
-        $this->connection->queryExecute($querySet->getAddSQL($params));
+        $this->connection->queryExecute($querySet->getAddSQL($this->params));
         return ($this->connection->getAffectedRowsCount() > 0);
     }
 
