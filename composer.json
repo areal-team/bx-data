@@ -1,6 +1,6 @@
 {
     "name": "aak74/bx-data",
-    "version": "0.3.3",
+    "version": "0.3.4",
     "description": "Классы для удобного доступа к данным в 1C-Bitrix",
     "license": "MIT",
     "keywords": ["bitrix", "1c-bitrix", "classes", "akop", "highload blocks", "битрикс", "1С-битрикс"],

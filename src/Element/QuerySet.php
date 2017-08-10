@@ -107,7 +107,7 @@ class QuerySet
     private function buildFilter(array $fields = [])
     {
         if (empty($this->filter)) {
-            \Akop\Util::pre([$fields, $this], 'buildFilter empty');
+            // \Akop\Util::pre([$fields, $this], 'buildFilter empty');
             return "";
         }
 
