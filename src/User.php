@@ -4,6 +4,20 @@ namespace Akop;
 class User extends \CUser
 {
 
+    public function getList1(array $params)
+    {
+        $list = self::GetList(
+            ($by="NAME"),
+            ($order="asc"),
+            $params['filter']
+        );
+        $result = [];
+        while ($user = $list->Fetch) {
+            $result[] = $user;
+        }
+        return $result;
+    }
+
     public function authByLogin($login)
     {
         $user = $this->GetByLogin($login)->fetch();
