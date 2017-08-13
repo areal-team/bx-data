@@ -71,7 +71,6 @@ class QuerySetTest extends \PHPUnit_Framework_TestCase
             $property->getValue($querySet)
         );
 
-        print_r([$this->sqlPattern . PHP_EOL, $querySet->getSelectSQL()]);
         $this->assertEquals(
             $this->sqlPattern . 'LIMIT 10' . PHP_EOL,
             $querySet->getSelectSQL()

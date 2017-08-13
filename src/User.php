@@ -4,20 +4,6 @@ namespace Akop;
 class User extends \CUser
 {
 
-    public function getList1(array $params)
-    {
-        $list = self::GetList(
-            ($by="NAME"),
-            ($order="asc"),
-            $params['filter']
-        );
-        $result = [];
-        while ($user = $list->Fetch) {
-            $result[] = $user;
-        }
-        return $result;
-    }
-
     public function authByLogin($login)
     {
         $user = $this->GetByLogin($login)->fetch();
@@ -26,7 +12,8 @@ class User extends \CUser
 
     public function isInGroup($groupId)
     {
-        return in_array($this->getCurrent(), $this->getGroups($userId));
+        \Akop\Util::pre($this->getGroups($this->getCurrent()), 'isInGroup getGroups($userId)');
+        return in_array($groupId, $this->getGroups($this->getCurrent()));
     }
 
     public function getGroups($userId)
