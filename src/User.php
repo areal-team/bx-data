@@ -12,7 +12,6 @@ class User extends \CUser
 
     public function isInGroup($groupId)
     {
-        \Akop\Util::pre($this->getGroups($this->getCurrent()), 'isInGroup getGroups($userId)');
         return in_array($groupId, $this->getGroups($this->getCurrent()));
     }
 
