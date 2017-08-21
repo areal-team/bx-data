@@ -53,6 +53,7 @@ class DbElement extends AbstractElement
 
     public function delete($primaryKey)
     {
+        // parent::delete($primaryKey);
         $querySet = new QuerySet($this->tableName, $this->primaryKey);
         $this->connection->queryExecute($querySet->getDeleteSQL($primaryKey));
         return ($this->connection->getAffectedRowsCount() > 0);
@@ -60,8 +61,9 @@ class DbElement extends AbstractElement
 
     public function update($primaryKey, array $params)
     {
+        parent::update($primaryKey, $params);
         $querySet = new QuerySet($this->tableName, $this->primaryKey);
-        $this->connection->queryExecute($querySet->getUpdateSQL($primaryKey, $params));
+        $this->connection->queryExecute($querySet->getUpdateSQL($primaryKey, $this->params));
         return ($this->connection->getAffectedRowsCount() > 0);
     }
 
