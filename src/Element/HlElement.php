@@ -44,15 +44,15 @@ class HlElement extends AbstractElement
 
     public function getList(array $params = array())
     {
+        // $params['select'] = [];
         parent::getList($params);
         $res = $this->entityDC->getList($this->params);
         $result = [];
         while ($item = $res->Fetch()) {
-            if (isset($item["ID"]) && $this->isAssoc) {
-                $result[$item["ID"]] = $this->getRenamed($item);
-            } else {
-                $result[] = $this->getRenamed($item);
-            }
+            $key = (isset($item["ID"]) && $this->isAssoc)
+                ? $item["ID"]
+                : count($result);
+            $result[$key] = $this->getRenamed($item);
         }
         return $result;
     }
@@ -108,23 +108,24 @@ class HlElement extends AbstractElement
 
     public function getMap()
     {
-        $result = $this->fieldsBase;
         $userFieldsObj = new UserField;
         $userFields = $userFieldsObj->getList([
             'order' => ["ENTITY_ID" => "ASC"],
             'filter' => ["ENTITY_ID" => "HLBLOCK_" . $this->hlblockId]
         ]);
+        return $this->getMapFields($userFields);
+    }
+
+    private function getMapFields(array $userFields)
+    {
+        $result = $this->fieldsBase;
         foreach ($userFields as $field) {
             $alias = \Akop\Util::camelize(substr($field["FIELD_NAME"], 3));
             switch ($field["USER_TYPE_ID"]) {
                 case "hlblock":
-                    // список возможных значений
-                    $result[$alias . "Name"] = array(
-                        "name" => "UF_NAME",
-                        "data_type" => "\\" . $this->hlblocks[$field["SETTINGS"]["HLBLOCK_ID"]],
-                        "reference" => array(
-                            "=this." . $field["FIELD_NAME"] => "ref.ID"
-                        ),
+                    $result = array_merge(
+                        $result,
+                        $this->addRefFields($field, $alias)
                     );
                     $alias .= "Id";
                     break;
@@ -133,10 +134,38 @@ class HlElement extends AbstractElement
             }
             $result[$alias] = $field["FIELD_NAME"];
         }
-
         return $result;
     }
 
+    protected function addRefFields($field, $alias)
+    {
+        $hlBlockId = $field["SETTINGS"]["HLBLOCK_ID"];
+        $hlBlockName = $this->hlblocks[$hlBlockId];
+        $refFields = $this->getRefFields($hlBlockId);
+        if (!empty($refFields)) {
+            foreach ($refFields as $refField) {
+                $result[$alias . $refField['alias']] = [
+                    "name" => $refField['fieldname'],
+                    "data_type" => "\\" . $hlBlockName,
+                    "reference" => [
+                        "=this." . $field["FIELD_NAME"] => "ref.ID"
+                    ],
+                ];
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Возвращает поля справочника
+     * @todo получать все поля справочника из БД
+     */
+    protected function getRefFields()
+    {
+        return [
+            ['alias' => 'Name', 'fieldname' => 'UF_NAME'],
+        ];
+    }
 
     /**
      * Выясняем возможно ли удаление данного элемента
@@ -163,7 +192,7 @@ class HlElement extends AbstractElement
         $result = true;
         foreach ($fields as $field) {
             $obj = new HlElement(array(
-                "hlblockId" => substr($field["ENTITY_ID"], 8) // убираем "HLBLOCK_"
+                "hlblockId" => $this->removePrefix($field["ENTITY_ID"])
             ));
             $list = $obj->getList(array(
                 "filter" => array(
@@ -177,6 +206,14 @@ class HlElement extends AbstractElement
             }
         }
         return $result;
+    }
+
+    /**
+     * Убирает префикс "HLBLOCK_"
+     */
+    private function removePrefix($fieldname)
+    {
+        return substr($fieldname, 8);
     }
 
     protected function updateParamsFilter()

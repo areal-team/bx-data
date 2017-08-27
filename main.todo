@@ -1,0 +1,17 @@
+Документация:
+  ☐ Описать isAssoc
+  Классы:
+    Element:
+      ☐ HlElement
+      ☐ DbElement
+        ☐ User
+        ☐ File
+      ☐ Element
+      ☐ Section
+      ☐ HlBlock
+      ☐ UserField
+    ☐ Security
+    ☐ User
+    ☐ Util
+HlElement:
+  ✔ Добавить тесты для класса @done(2017-08-27 09:24) @project(HlElement)
