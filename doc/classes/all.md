@@ -1,0 +1,23 @@
+# Классы в namespace \Akop\
+
+- Security содержит элементарные функции для работы с безопасностью
+  - isRefererValid
+  - isUserGroupValid
+  - isCLI
+- User расширяет класс CUser и добавляет несколько новых функций
+  - authByLogin
+  - isInGroup
+  - getGroups
+  - getCurrent
+  - getFullName
+- Util функции для отладки, которые используются практически на любом проекте, и некоторые другие функции
+  - pre
+  - showLastQuery
+  - getLastQuery
+  - showQueryDump
+  - getQueryDump
+  - camelize
+  - toTranslit
+  - fromTranslit
+  - isAdmin
+  - isDateValid
