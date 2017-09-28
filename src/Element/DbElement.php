@@ -42,11 +42,11 @@ class DbElement extends AbstractElement
         return $result;
     }
 
-
     public function add(array $params)
     {
         parent::add($params);
         $querySet = new QuerySet($this->tableName);
+        $this->prepareParams();
         $this->connection->queryExecute($querySet->getAddSQL($this->params));
         return ($this->connection->getAffectedRowsCount() > 0);
     }
@@ -63,6 +63,7 @@ class DbElement extends AbstractElement
     {
         parent::update($primaryKey, $params);
         $querySet = new QuerySet($this->tableName, $this->primaryKey);
+        $this->prepareParams();
         $this->connection->queryExecute($querySet->getUpdateSQL($primaryKey, $this->params));
         return ($this->connection->getAffectedRowsCount() > 0);
     }
@@ -80,5 +81,17 @@ class DbElement extends AbstractElement
         }
 
         return $result;
+    }
+
+    private function prepareParams()
+    {
+        global $DB;
+        $connect = $DB->db_Conn;
+        if (!\is_array($this->params) || !\is_object($connect) || !(\get_class($connect) === 'mysqli')) {
+            return;
+        }
+        foreach ($this->params as &$value) {
+            $value = \mysqli_real_escape_string($connect, $value);
+        }
     }
 }
