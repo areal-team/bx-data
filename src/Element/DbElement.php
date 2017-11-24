@@ -83,6 +83,16 @@ class DbElement extends AbstractElement
         return $result;
     }
 
+    public function query($sql)
+    {
+        $list = $this->connection->query($sql);
+        while ($item = $list->fetch()) {
+            $result[] = $item;
+        }
+        return $result;
+    }
+
+
     private function prepareParams()
     {
         global $DB;
