@@ -92,6 +92,11 @@ class DbElement extends AbstractElement
         return $result;
     }
 
+    public function queryExecute($sql)
+    {
+        return $this->connection->queryExecute($sql);
+    }
+
 
     private function prepareParams()
     {
