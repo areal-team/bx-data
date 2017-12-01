@@ -276,4 +276,10 @@ class AbstractElement implements ElementInterface
             }
         }
     }
+    
+    protected function getLastId()
+    {
+        global $DB;
+        return $DB->LastID();
+    }    
 }

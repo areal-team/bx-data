@@ -48,7 +48,9 @@ class DbElement extends AbstractElement
         $querySet = new QuerySet($this->tableName);
         $this->prepareParams();
         $this->connection->queryExecute($querySet->getAddSQL($this->params));
-        return ($this->connection->getAffectedRowsCount() > 0);
+        ($this->connection->getAffectedRowsCount() > 0);
+        
+        return $this->getLastId();
     }
 
     public function delete($primaryKey)
@@ -56,7 +58,8 @@ class DbElement extends AbstractElement
         // parent::delete($primaryKey);
         $querySet = new QuerySet($this->tableName, $this->primaryKey);
         $this->connection->queryExecute($querySet->getDeleteSQL($primaryKey));
-        return ($this->connection->getAffectedRowsCount() > 0);
+        // ($this->connection->getAffectedRowsCount() > 0);
+        return true;
     }
 
     public function update($primaryKey, array $params)
@@ -65,7 +68,8 @@ class DbElement extends AbstractElement
         $querySet = new QuerySet($this->tableName, $this->primaryKey);
         $this->prepareParams();
         $this->connection->queryExecute($querySet->getUpdateSQL($primaryKey, $this->params));
-        return ($this->connection->getAffectedRowsCount() > 0);
+        // ($this->connection->getAffectedRowsCount() > 0);
+        return $primaryKey;
     }
 
     public function getMap()
