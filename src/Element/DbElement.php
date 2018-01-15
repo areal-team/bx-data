@@ -16,12 +16,9 @@ class DbElement extends AbstractElement
 
     public function __construct()
     {
-        // global $DB;
-        // $this->db = $DB;
         $this->connection = \Bitrix\Main\Application::getConnection();
         parent::__construct();
         $this->sqlHelper = $this->connection->getSqlHelper();
-        // return $this;
     }
 
 
@@ -48,9 +45,11 @@ class DbElement extends AbstractElement
         $querySet = new QuerySet($this->tableName);
         $this->prepareParams();
         $this->connection->queryExecute($querySet->getAddSQL($this->params));
-        ($this->connection->getAffectedRowsCount() > 0);
+        // ($this->connection->getAffectedRowsCount() > 0);
+        $id = $this->getLastId();
+        // \Akop\Util::pre([$id, $params, ($this->connection->getAffectedRowsCount() > 0)], 'add params');
         
-        return $this->getLastId();
+        return $id;
     }
 
     public function delete($primaryKey)
@@ -113,4 +112,9 @@ class DbElement extends AbstractElement
             $value = \mysqli_real_escape_string($connect, $value);
         }
     }
+    
+    protected function getLastId()
+    {
+        return $this->connection->getInsertedId();
+    }    
 }
