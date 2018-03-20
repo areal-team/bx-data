@@ -52,7 +52,7 @@ class HlElement extends AbstractElement
             $key = (isset($item["ID"]) && $this->isAssoc)
                 ? $item["ID"]
                 : count($result);
-            $result[$key] = $this->getRenamed($item);
+            $result[$key] = $this->getProcessed($item);
         }
         return $result;
     }

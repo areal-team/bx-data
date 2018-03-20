@@ -44,7 +44,7 @@ class DbElement extends AbstractElement
         // die;
         $list = $this->connection->query($selectSQL);
         while ($item = $list->fetch()) {
-            $result[] = $this->getRenamed($item);
+            $result[] = $this->getProcessed($item);
         }
         // \Akop\Util::pre([$item, $result]);
         // die;

@@ -87,7 +87,7 @@ class Element extends IbElementOrSection
                     ? $elem["ID"]
                     : count($result)
                 );
-            $result[$key] = $this->getRenamed($elem);
+            $result[$key] = $this->getProcessed($elem);
         }
 
         return $result;

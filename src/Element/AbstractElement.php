@@ -10,6 +10,9 @@ class AbstractElement implements ElementInterface
     use ParamTrait;
 
     protected $fieldsBase = [];
+    protected $dateFormat = 'd.m.Y';
+    protected $dateTimeFormat = 'd.m.Y H:i:s';
+    protected $dates = [];
     protected $fields = ["ID"];
     protected $reversedFields = [];
     protected $compressedFields = [];
@@ -233,12 +236,14 @@ class AbstractElement implements ElementInterface
     }
 
     /**
-     * Возвращает набор данных с переименованными полями
-     * Если поля были сжаты, то разжимает их
+     * Возвращает обработанный набор данных
+     *  - Переименовывает поля
+     *  - Если поля были сжаты, то разжимает их
+     *  - Если поля указаны в массиве дат, то значение преобразуются в строку
      * @param  [array] $item набор данных
      * @return [array]
      */
-    protected function getRenamed($item)
+    protected function getProcessed($item)
     {
         if (!empty($this->reversedFields)) {
             foreach ($item as $key => $value) {
@@ -246,10 +251,49 @@ class AbstractElement implements ElementInterface
                     ? $this->reversedFields[$key]
                     : $key;
 
-                $result[$fieldName] = $this->uncompressField($fieldName, $value);
+                $newValue = $this->uncompressField($fieldName, $value);
+                $result[$fieldName] = $this->convertDateFromDB($fieldName, $newValue);
             }
         }
         return $result;
+    }
+
+    /**
+     * Если поле указано в массиве дат, то возвращает вместо объекта строку
+     * Для того, чтобы избежать это преобразование достаточно не заполнять массив дат
+     */
+    private function convertDateFromDB($fieldName, $value)
+    {
+        // \Akop\Util::pre([$fieldName, $value, $this->dates, in_array($fieldName, $this->dates)], 'convertDateFromDB');
+        return (in_array($fieldName, $this->dates))
+            ? $value->toString()
+            : $value;
+    }
+
+    /** 
+     * Преобразует строку в объект дата, пригодный для сохранения в БД
+     */
+    private function convertDateToDB($fieldName, $value)
+    {
+        if (in_array($fieldName, $this->dates) && !empty($value)) {
+            if ($this->isTimeProbably($value)) {
+                $dt = new \Bitrix\Main\Type\DateTime($value, $this->dateTimeFormat);
+                return $dt->format('Y-m-d H:i:s');
+            }
+            $dt = new \Bitrix\Main\Type\DateTime($value, $this->dateFormat);
+            return $dt->format('Y-m-d');
+        }
+        return $value;
+    }
+
+    /**
+     * Является ли строка временем (предположительно)
+     * так как используется очень ограниченно, то такое условие вполне достаточно
+     * При особых DateFormat следует переопределить функцию
+     */
+    protected function isTimeProbably($value)
+    {
+        return (strlen($value) > 10);
     }
 
     protected function updateValueForReverse($value)
