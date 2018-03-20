@@ -9,6 +9,8 @@ namespace Akop\Element;
 class DbElement extends AbstractElement
 {
     protected $tableName = "";
+    protected $connectionName = "";
+    protected $scriptsAfterConnect = [];
     protected $fieldsBase = [
         "id" => "id",
     ];
@@ -16,7 +18,12 @@ class DbElement extends AbstractElement
 
     public function __construct()
     {
-        $this->connection = \Bitrix\Main\Application::getConnection();
+        $this->connection = \Bitrix\Main\Application::getConnection($this->connectionName);
+        if (!empty($this->scriptsAfterConnect)) {
+            foreach ($this->scriptsAfterConnect as $script) {
+                $this->connection->queryExecute($script);
+            }
+        }
         parent::__construct();
         $this->sqlHelper = $this->connection->getSqlHelper();
     }
@@ -32,10 +39,15 @@ class DbElement extends AbstractElement
         $querySet->addOrder($this->params['order']);
         $querySet->setLimit($this->params['limit']);
 
-        $list = $this->connection->query($querySet->getSelectSQL(array_keys($this->reversedFields)));
+        $selectSQL = $querySet->getSelectSQL(array_keys($this->reversedFields));
+        // \Akop\Util::pre([$this->reversedFields, $selectSQL]);
+        // die;
+        $list = $this->connection->query($selectSQL);
         while ($item = $list->fetch()) {
             $result[] = $this->getRenamed($item);
         }
+        // \Akop\Util::pre([$item, $result]);
+        // die;
         return $result;
     }
 
