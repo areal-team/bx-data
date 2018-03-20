@@ -265,7 +265,7 @@ class AbstractElement implements ElementInterface
     private function convertDateFromDB($fieldName, $value)
     {
         // \Akop\Util::pre([$fieldName, $value, $this->dates, in_array($fieldName, $this->dates)], 'convertDateFromDB');
-        return (in_array($fieldName, $this->dates))
+        return (!empty($value) && in_array($fieldName, $this->dates))
             ? $value->toString()
             : $value;
     }
