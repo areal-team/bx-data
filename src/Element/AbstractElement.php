@@ -18,6 +18,7 @@ class AbstractElement implements ElementInterface
     protected $compressedFields = [];
     protected $primaryKey = "ID";
     protected $isAssoc = true;
+    protected $fieldsStripTags = [];
 
     private $errorMesage = '';
     private $lastOperation = false;
@@ -202,16 +203,6 @@ class AbstractElement implements ElementInterface
             : $fieldValue;
     }
 
-/*
-    private function uncompressFields(array $fields)
-    {
-        foreach ($fields as $fieldName => $fieldValue) {
-            $result[$fieldName] = $this->uncompressField($fieldName, $fieldValue);
-        }
-        return $result;
-    }
-*/
-
     private function uncompressField($fieldName, $fieldValue)
     {
         return (in_array($fieldName, $this->compressedFields))
@@ -251,11 +242,22 @@ class AbstractElement implements ElementInterface
                     ? $this->reversedFields[$key]
                     : $key;
 
-                $newValue = $this->uncompressField($fieldName, $value);
-                $result[$fieldName] = $this->convertDateFromDB($fieldName, $newValue);
+                $value = $this->uncompressField($fieldName, $value);
+                $value = $this->convertDateFromDB($fieldName, $value);
+                $result[$fieldName] = $this->stripTags($fieldName, $value);
             }
         }
         return $result;
+    }
+
+    /**
+     * Удалят html теги
+     */
+    private function stripTags($fieldName, $value)
+    {
+        return (!empty($value) && in_array($fieldName, $this->fieldsStripTags))
+            ? strip_tags($value)
+            : $value;
     }
 
     /**

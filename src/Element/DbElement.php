@@ -2,32 +2,16 @@
 namespace Akop\Element;
 
 /**
- * Класс для работы с данными из highload блоков
- * Предпочтительно наследовать класс с указанием $entityName
+ * Класс для работы с данными из таблиц
+ * Необходимо наследовать класс с указанием:
+ * @var $tableName              Имя таблицы
+ * @var $connectionName         Имя соединения
+ * @var $scriptsAfterConnect    Скрипты выполняемве после коннекта
  * @author Андрей Копылов aakopylov@mail.ru
  */
-class DbElement extends AbstractElement
+class DbElement extends BaseDbElement
 {
     protected $tableName = "";
-    protected $connectionName = "";
-    protected $scriptsAfterConnect = [];
-    protected $fieldsBase = [
-        "id" => "id",
-    ];
-
-
-    public function __construct()
-    {
-        $this->connection = \Bitrix\Main\Application::getConnection($this->connectionName);
-        if (!empty($this->scriptsAfterConnect)) {
-            foreach ($this->scriptsAfterConnect as $script) {
-                $this->connection->queryExecute($script);
-            }
-        }
-        parent::__construct();
-        $this->sqlHelper = $this->connection->getSqlHelper();
-    }
-
 
     public function getList(array $params = array())
     {
