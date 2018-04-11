@@ -86,16 +86,15 @@ class DbElement extends BaseDbElement
     {
         $list = $this->connection->query($sql);
         while ($item = $list->fetch()) {
-            $result[] = $item;
+            $result[] = $this->getProcessed($item);
         }
         return $result;
     }
-
+    
     public function queryExecute($sql)
     {
         return $this->connection->queryExecute($sql);
     }
-
 
     private function prepareParams()
     {
