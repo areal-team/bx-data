@@ -19,6 +19,7 @@ class AbstractElement implements ElementInterface
     protected $primaryKey = "ID";
     protected $isAssoc = true;
     protected $fieldsStripTags = [];
+    protected $fieldsIgnore = [];
 
     private $errorMesage = '';
     private $lastOperation = false;

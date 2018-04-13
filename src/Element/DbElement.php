@@ -76,7 +76,9 @@ class DbElement extends BaseDbElement
         // return;
         foreach ($userFields as $fieldName => $field) {
             $alias = \Akop\Util::camelize($fieldName);
-            $result[$alias] = $fieldName;
+            if (!in_array($alias, $this->fieldsIgnore) && !in_array($fieldName, $this->fieldsIgnore)) {
+                $result[$alias] = $fieldName;
+            }
         }
 
         return $result;
