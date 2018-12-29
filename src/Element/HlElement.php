@@ -121,9 +121,6 @@ class HlElement extends AbstractElement
         $result = $this->fieldsBase;
         foreach ($userFields as $field) {
             $alias = \Akop\Util::camelize(substr($field["FIELD_NAME"], 3));
-            if (!in_array($alias, $this->fieldsIgnore) && !in_array($fieldName, $this->fieldsIgnore)) {
-                $result[$alias] = $fieldName;
-            }
             switch ($field["USER_TYPE_ID"]) {
                 case "hlblock":
                     $result = array_merge(
@@ -133,6 +130,9 @@ class HlElement extends AbstractElement
                     $alias .= "Id";
                     break;
                 default:
+                    if (!in_array($alias, $this->fieldsIgnore) && !in_array($fieldName, $this->fieldsIgnore)) {
+                        $result[$alias] = $fieldName;
+                    }
                     break;
             }
             $result[$alias] = $field["FIELD_NAME"];
