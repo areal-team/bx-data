@@ -138,9 +138,15 @@ class AbstractElement implements ElementInterface
             "filter" => $filter,
         ));
 
-        $primaryKey = $this->primaryKey;
-        $hasPrimaryKey = $item[$primaryKey] || $item[strtolower($primaryKey)];
-        if ($item && $hasPrimaryKey) {
+        $primaryKey = null;
+        if ($item[$this->primaryKey]) {
+            $primaryKey = $item[$this->primaryKey];
+        }
+        if ($item[strtolower($this->primaryKey)]) {
+            $primaryKey = $item[strtolower($this->primaryKey)];
+        }
+
+        if ($item && $primaryKey) {
             $this->update($primaryKey, $params);
             return $primaryKey;
         }
