@@ -2,28 +2,16 @@
 namespace Akop\Element;
 
 /**
- * Класс для работы с данными из highload блоков
- * Предпочтительно наследовать класс с указанием $entityName
+ * Класс для работы с данными из таблиц
+ * Необходимо наследовать класс с указанием:
+ * @var $tableName              Имя таблицы
+ * @var $connectionName         Имя соединения
+ * @var $scriptsAfterConnect    Скрипты выполняемве после коннекта
  * @author Андрей Копылов aakopylov@mail.ru
  */
-class DbElement extends AbstractElement
+class DbElement extends BaseDbElement
 {
     protected $tableName = "";
-    protected $fieldsBase = [
-        "id" => "id",
-    ];
-
-
-    public function __construct()
-    {
-        // global $DB;
-        // $this->db = $DB;
-        $this->connection = \Bitrix\Main\Application::getConnection();
-        parent::__construct();
-        $this->sqlHelper = $this->connection->getSqlHelper();
-        // return $this;
-    }
-
 
     public function getList(array $params = array())
     {
@@ -35,20 +23,29 @@ class DbElement extends AbstractElement
         $querySet->addOrder($this->params['order']);
         $querySet->setLimit($this->params['limit']);
 
-        $list = $this->connection->query($querySet->getSelectSQL(array_keys($this->reversedFields)));
+        $selectSQL = $querySet->getSelectSQL(array_keys($this->reversedFields));
+        // \Akop\Util::pre([$this->reversedFields, $selectSQL]);
+        // die;
+        $list = $this->connection->query($selectSQL);
         while ($item = $list->fetch()) {
-            $result[] = $this->getRenamed($item);
+            $result[] = $this->getProcessed($item);
         }
+        // \Akop\Util::pre([$item, $result]);
+        // die;
         return $result;
     }
-
 
     public function add(array $params)
     {
         parent::add($params);
         $querySet = new QuerySet($this->tableName);
+        $this->prepareParams();
         $this->connection->queryExecute($querySet->getAddSQL($this->params));
-        return ($this->connection->getAffectedRowsCount() > 0);
+        // ($this->connection->getAffectedRowsCount() > 0);
+        $id = $this->getLastId();
+        // \Akop\Util::pre([$id, $params, ($this->connection->getAffectedRowsCount() > 0)], 'add params');
+        
+        return $id;
     }
 
     public function delete($primaryKey)
@@ -56,15 +53,18 @@ class DbElement extends AbstractElement
         // parent::delete($primaryKey);
         $querySet = new QuerySet($this->tableName, $this->primaryKey);
         $this->connection->queryExecute($querySet->getDeleteSQL($primaryKey));
-        return ($this->connection->getAffectedRowsCount() > 0);
+        // ($this->connection->getAffectedRowsCount() > 0);
+        return true;
     }
 
     public function update($primaryKey, array $params)
     {
         parent::update($primaryKey, $params);
         $querySet = new QuerySet($this->tableName, $this->primaryKey);
+        $this->prepareParams();
         $this->connection->queryExecute($querySet->getUpdateSQL($primaryKey, $this->params));
-        return ($this->connection->getAffectedRowsCount() > 0);
+        // ($this->connection->getAffectedRowsCount() > 0);
+        return $primaryKey;
     }
 
     public function getMap()
@@ -76,9 +76,42 @@ class DbElement extends AbstractElement
         // return;
         foreach ($userFields as $fieldName => $field) {
             $alias = \Akop\Util::camelize($fieldName);
-            $result[$alias] = $fieldName;
+            if (!in_array($alias, $this->fieldsIgnore) && !in_array($fieldName, $this->fieldsIgnore)) {
+                $result[$alias] = $fieldName;
+            }
         }
 
         return $result;
     }
+
+    public function query($sql)
+    {
+        $list = $this->connection->query($sql);
+        while ($item = $list->fetch()) {
+            $result[] = $this->getProcessed($item);
+        }
+        return $result;
+    }
+    
+    public function queryExecute($sql)
+    {
+        return $this->connection->queryExecute($sql);
+    }
+
+    private function prepareParams()
+    {
+        global $DB;
+        $connect = $DB->db_Conn;
+        if (!\is_array($this->params) || !\is_object($connect) || !(\get_class($connect) === 'mysqli')) {
+            return;
+        }
+        foreach ($this->params as &$value) {
+            $value = \mysqli_real_escape_string($connect, $value);
+        }
+    }
+    
+    protected function getLastId()
+    {
+        return $this->connection->getInsertedId();
+    }    
 }

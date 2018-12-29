@@ -12,11 +12,13 @@ namespace App\Model;
 
 class Model extends \Akop\Element\HlElement
 {
-	protected $entityName = 'Model';
+  protected $entityName = 'Model';
 }
 ```
 
 ## Типичный getList
+
+### Код
 ```PHP
 <?php
 $models = new \App\Model\Model;
@@ -28,8 +30,7 @@ $result = $models->getList([
 ]);
 ```
 
-## Формируется запрос вида:
-
+### Формируется запрос вида:
 ```SQL
 SELECT
   `model`.`ID` AS `ID`,
@@ -40,4 +41,26 @@ FROM `b_hlbd_auto_model` `model`
 LEFT JOIN `b_hlbd_auto_brand` `model_brandname_` ON `model`.`UF_BRAND` = `model_brandname_`.`ID`
 WHERE `model`.`UF_BRAND` = 120
 ORDER BY `model`.`UF_NAME` ASC
+```
+
+## Выборка с ИЛИ
+### Код
+```PHP
+<?php
+$models = new \App\Model\Model;
+
+$result = $models->getList([
+  'filter' => [
+    'LOGIC' => 'OR',
+    'brandId' => 120,
+    '<id' => 30,
+  ],
+]);
+```
+
+### Формируется запрос вида:
+```SQL
+SELECT *
+FROM `b_hlbd_auto_model` `model`
+WHERE `model`.`UF_BRAND` = 120 OR `model`.`ID` < 30
 ```
