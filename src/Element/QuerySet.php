@@ -171,13 +171,22 @@ class QuerySet
             if (empty($prefix)) {
                 return '=';
             }
+
+            if ($prefix === "!=") {
+                return '<>';
+            }
+
             return $prefix;
         }
 
+        if ($prefix === "!=") {
+            return 'NOT LIKE';
+        }
 
         if (!empty($prefix)) {
             return $prefix;
         }
+
         return 'LIKE';
     }
 
