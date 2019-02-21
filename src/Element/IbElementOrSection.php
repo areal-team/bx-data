@@ -32,7 +32,7 @@ class IbElementOrSection extends AbstractElement
         }
 
         if (!empty($params["limit"])) {
-            $params["limit"] = array("nTopCount" => $params["limit"]);
+            $params["limit"] = $this->getLimit($params["limit"]);
         }
         parent::getList($params);
         return false;
@@ -80,5 +80,25 @@ class IbElementOrSection extends AbstractElement
             $result = $res['ID'];
         }
         return $result;
+    }
+
+    /**
+     * Обработка limit для getList() битрикса (приходит в таком же формате как и в DbElement)
+     * @param $params
+     * @return array
+     */
+    private function getLimit($params): array
+    {
+        if (is_array($params)) {
+            if (count($params) == 2) {
+                $params = array(
+                    "iNumPage" => (int)(($params[0] + $params[1]) / $params[1]),
+                    "nPageSize" => $params[1]
+                );
+            }
+        } else {
+            $params = array("nTopCount" => $params);
+        }
+        return $params;
     }
 }
