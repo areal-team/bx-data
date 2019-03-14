@@ -80,7 +80,14 @@ class Element extends IbElementOrSection
             $params["limit"],
             $params["select"]
         );
-
+	/**
+         * если передан $params["group"] = [], то getList возвращает количество элементов по фильтру
+         */
+        if (!is_object($list)) {
+            return [
+                'count' => $list
+            ];
+        }
         $result = [];
         while ($elem = $list->Fetch()) {
             $key = ($params["isAssoc"]
