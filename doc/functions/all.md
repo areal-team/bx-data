@@ -13,19 +13,19 @@ getRow(array $params = [])
 ```
 Возвращает **одну строку** в соответствии с переданным параметром.
 
-## add
+## [add](add.md)
 ```php
 add(array $params)
 ```
 Добавляет строку.
 
-## update
+## [update](update.md)
 ```php
 update($primaryKey, array $params)
 ```
 Обновляетвляет строку.
 
-## upsert
+## [upsert](upsert.md)
 ```php
 upsert(array $filter, array $params)
 ```

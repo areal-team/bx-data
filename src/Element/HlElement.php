@@ -52,7 +52,7 @@ class HlElement extends AbstractElement
             $key = (isset($item["ID"]) && $this->isAssoc)
                 ? $item["ID"]
                 : count($result);
-            $result[$key] = $this->getRenamed($item);
+            $result[$key] = $this->getProcessed($item);
         }
         return $result;
     }
@@ -130,6 +130,9 @@ class HlElement extends AbstractElement
                     $alias .= "Id";
                     break;
                 default:
+                    if (!in_array($alias, $this->fieldsIgnore) && !in_array($fieldName, $this->fieldsIgnore)) {
+                        $result[$alias] = $fieldName;
+                    }
                     break;
             }
             $result[$alias] = $field["FIELD_NAME"];

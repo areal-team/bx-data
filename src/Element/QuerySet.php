@@ -136,11 +136,12 @@ class QuerySet
         );
         switch ($operand) {
             case 'IN':
+            case 'NOT IN':
                 $values = '';
                 foreach ($fieldValue as $value) {
                     $values .= "'$value',";
                 }
-                return "`$this->tableName`.`$fieldName` IN ({$this->removeLastComma($values)}) AND ";
+                return "`$this->tableName`.`$fieldName` $operand ({$this->removeLastComma($values)}) AND ";
                 break;
             case 'BETWEEN':
                 return "`$this->tableName`.`$fieldName` BETWEEN '{$fieldValue[0]}' AND '{$fieldValue[1]}' AND ";
@@ -163,6 +164,9 @@ class QuerySet
           if ($prefix == '><') {
             return 'BETWEEN';
           }
+          if ($prefix == '!=') {
+              return 'NOT IN';
+          }
           return 'IN';
         }
         // \Akop\Util::pre([$fieldValue, $prefix], 'getOperand');
@@ -171,13 +175,22 @@ class QuerySet
             if (empty($prefix)) {
                 return '=';
             }
+
+            if ($prefix === "!=") {
+                return '<>';
+            }
+
             return $prefix;
         }
 
+        if ($prefix === "!=") {
+            return 'NOT LIKE';
+        }
 
         if (!empty($prefix)) {
             return $prefix;
         }
+
         return 'LIKE';
     }
 
