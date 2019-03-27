@@ -46,11 +46,6 @@ class Element extends IbElementOrSection
         parent::getList($params);
         $params = $this->params;
 
-        /* По умолчанию возвращаем ассоциативный массив */
-        if (!isset($params["isAssoc"])) {
-            $params["isAssoc"] = true;
-        }
-
         $params = array_merge(
             [
                 "order" => false,

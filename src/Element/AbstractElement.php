@@ -46,12 +46,13 @@ class AbstractElement implements ElementInterface
      */
     public function getList(array $params = [])
     {
-        /* По умолчанию возвращаем ассоциативный массив */
-        $this->isAssoc = (isset($params["isAssoc"])
-            ? $params["isAssoc"]
-            : true
-        );
-        unset($params['isAssoc']);
+        /**
+         * Значение поля isAssoc у класса
+         * меняется только при наличии флага в параметрах
+         */
+        if (!isset($params["isAssoc"])) {
+            $params["isAssoc"] = $this->isAssoc;
+        }
 
         $this->startNewOperation('getList');
         // если передан параметр group, то данные select игнорируем
@@ -281,7 +282,7 @@ class AbstractElement implements ElementInterface
             : $value;
     }
 
-    /** 
+    /**
      * Преобразует строку в объект дата, пригодный для сохранения в БД
      */
     private function convertDateToDB($fieldName, $value)
@@ -331,10 +332,10 @@ class AbstractElement implements ElementInterface
             }
         }
     }
-    
+
     protected function getLastId()
     {
         global $DB;
         return $DB->LastID();
-    }    
+    }
 }
