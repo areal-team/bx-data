@@ -47,8 +47,7 @@ class AbstractElement implements ElementInterface
     public function getList(array $params = [])
     {
         /**
-         * Значение поля isAssoc у класса
-         * меняется только при наличии флага в параметрах
+         * Значение по-умолчанию берется из поля isAssoc
          */
         if (!isset($params["isAssoc"])) {
             $params["isAssoc"] = $this->isAssoc;
