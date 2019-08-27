@@ -62,7 +62,7 @@ class Element extends IbElementOrSection
          * В запросах обязательно должен присутствовать ID для того чтобы вернуть ассоциативный массив
          * Если возвращаем обычный массив, то поле ID не добавляем
          */
-        if (!in_array("ID", $params["select"]) && $params["isAssoc"]) {
+        if (!in_array("ID", $params["select"]) && $this->isAssoc) {
             $params["select"][] = "ID";
         }
 
@@ -78,7 +78,7 @@ class Element extends IbElementOrSection
 
         $result = [];
         while ($elem = $list->Fetch()) {
-            $key = ($params["isAssoc"]
+            $key = ($this->isAssoc
                     ? $elem["ID"]
                     : count($result)
                 );
