@@ -19,7 +19,21 @@ class HlBlock extends AbstractElement
         parent::getList($params);
         $result = false;
         \CModule::includeModule('highloadblock');
-        $objBlock = HL\HighloadBlockTable::getList($this->params);
+        $availableKeys = [
+            'select',
+            'filter',
+            'group',
+            'order',
+            'limit',
+            'offset',
+            'runtime',
+            'cache',
+        ];
+        $getListParams = array_filter($this->params, function ($item) use ($availableKeys) {
+            return in_array($item, $availableKeys);
+        }, ARRAY_FILTER_USE_KEY);
+
+        $objBlock = HL\HighloadBlockTable::getList($getListParams);
         while ($element = $objBlock->Fetch()) {
             $result[$element["ID"]] = $element;
         }
