@@ -46,7 +46,20 @@ class HlElement extends AbstractElement
     {
         // $params['select'] = [];
         parent::getList($params);
-        $res = $this->entityDC->getList($this->params);
+        $availableKeys = [
+            'select',
+            'filter',
+            'group',
+            'order',
+            'limit',
+            'offset',
+            'runtime',
+            'cache',
+        ];
+        $getListParams = array_filter($this->params, function ($item) use ($availableKeys) {
+            return in_array($item, $availableKeys);
+        }, ARRAY_FILTER_USE_KEY);
+        $res = $this->entityDC->getList($getListParams);
         $result = [];
         while ($item = $res->Fetch()) {
             $key = (isset($item["ID"]) && $this->isAssoc)
