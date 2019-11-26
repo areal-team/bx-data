@@ -1,5 +1,5 @@
 {
-    "name": "aak74/bx-data",
+    "name": "areal-team/bx-data",
     "version": "0.6.7",
     "description": "Классы для удобного доступа к данным в 1C-Bitrix",
     "license": "MIT",
@@ -25,7 +25,7 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/aak74/bx-data"
+            "url": "https://github.com/areal-team/bx-data"
         }
     ]
 }
