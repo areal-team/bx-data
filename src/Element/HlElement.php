@@ -62,7 +62,7 @@ class HlElement extends AbstractElement
         $res = $this->entityDC->getList($getListParams);
         $result = [];
         while ($item = $res->Fetch()) {
-            $key = (isset($item["ID"]) && $this->isAssoc)
+            $key = (isset($item["ID"]) && $this->params['isAssoc'])
                 ? $item["ID"]
                 : count($result);
             $result[$key] = $this->getProcessed($item);
